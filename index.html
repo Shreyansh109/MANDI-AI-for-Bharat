@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI for Bharat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    /* ========== THEME ========== */
+    :root {
+      --bg: #f0ede8;
+      --bg-deep: #e6e0d8;
+      --card: #ffffff;
+      --card-shadow: rgba(0,0,0,0.06);
+      --text: #1c1a17;
+      --muted: #7a746b;
+      --accent-veg: #3a7d5c;
+      --accent-veg-light: #eaf6ef;
+      --accent-grain: #c48a1e;
+      --accent-grain-light: #fdf3e0;
+      --border: #ddd8cf;
+      --toggle-bg: #cbd5e0;
+      --toggle-knob: #fff;
+      --toggle-shadow: rgba(0,0,0,0.15);
+      --overlay: rgba(0,0,0,0.35);
+    }
+
+    body.dark {
+      --bg: #16161a;
+      --bg-deep: #1e1e24;
+      --card: #24242c;
+      --card-shadow: rgba(0,0,0,0.3);
+      --text: #eceae6;
+      --muted: #8a8580;
+      --accent-veg: #5aad82;
+      --accent-veg-light: rgba(90,173,130,0.12);
+      --accent-grain: #dba032;
+      --accent-grain-light: rgba(219,160,50,0.12);
+      --border: #2e2e36;
+      --toggle-bg: #2a3040;
+      --toggle-knob: #fff;
+      --toggle-shadow: rgba(0,0,0,0.4);
+      --overlay: rgba(0,0,0,0.55);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background 0.4s, color 0.4s;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Script-specific font stacks */
+    body.lang-hi, body.lang-mr { font-family: 'Noto Sans Devanagari', 'DM Sans', sans-serif; }
+    body.lang-ta               { font-family: 'Noto Sans Tamil',      'DM Sans', sans-serif; }
+    body.lang-en               { font-family: 'DM Sans', sans-serif; }
+
+    .app {
+      max-width: 460px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ========== HEADER ========== */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      gap: 8px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.4s, border-color 0.4s;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .location {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--bg);
+      padding: 6px 11px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      transition: background 0.4s, border-color 0.4s;
+      white-space: nowrap;
+      flex-shrink: 1;
+      min-width: 0;
+    }
+    .location .pin { font-size: 14px; flex-shrink: 0; }
+    .location .loc-text { overflow: hidden; text-overflow: ellipsis; }
+
+    /* ===== LANG BUTTON ===== */
+    .lang-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 6px 10px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .lang-btn:hover { border-color: var(--accent-veg); }
+    .lang-btn:active { transform: scale(0.95); }
+    .lang-btn .globe { font-size: 14px; }
+    .lang-btn .lang-code {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .lang-btn .chevron {
+      font-size: 8px;
+      color: var(--muted);
+      transition: transform 0.25s;
+    }
+    .lang-btn.open .chevron { transform: rotate(180deg); }
+
+    /* ========== TOGGLE SWITCH ========== */
+    .toggle-wrap {
+      position: relative;
+      width: 68px;
+      height: 34px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .toggle-track {
+      width: 100%;
+      height: 100%;
+      border-radius: 17px;
+      background: var(--toggle-bg);
+      position: relative;
+      overflow: hidden;
+      transition: background 0.45s cubic-bezier(.4,0,.2,1);
+    }
+
+    .toggle-wrap::before {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #fde68a, #86efac);
+      opacity: 0.35;
+      z-index: 0;
+      transition: opacity 0.45s, background 0.45s;
+    }
+    body.dark .toggle-wrap::before {
+      background: linear-gradient(135deg, #7dd3fc, #a78bfa);
+      opacity: 0.3;
+    }
+    .toggle-track { position: relative; z-index: 1; }
+
+    .t-star {
+      position: absolute;
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: #fff;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .t-star-1 { top: 7px; left: 12px; }
+    .t-star-2 { top: 20px; left: 18px; width: 2px; height: 2px; }
+    .t-star-3 { top: 11px; left: 28px; width: 2.5px; height: 2.5px; }
+    body.dark .t-star { opacity: 0.8; }
+
+    .t-cloud {
+      position: absolute;
+      background: rgba(255,255,255,0.7);
+      border-radius: 10px;
+      transition: opacity 0.35s ease, transform 0.45s ease;
+    }
+    .t-cloud-1 { width: 17px; height: 7px; top: 8px; right: 8px; }
+    .t-cloud-2 { width: 10px; height: 6px; top: 18px; right: 14px; }
+    body.dark .t-cloud { opacity: 0; transform: translateX(12px); }
+
+    .toggle-knob {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--toggle-knob);
+      box-shadow: 0 2px 6px var(--toggle-shadow);
+      position: absolute;
+      top: 4px; left: 4px;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: transform 0.45s cubic-bezier(.4,0,.2,1), box-shadow 0.3s;
+      will-change: transform;
+    }
+    body.dark .toggle-knob {
+      transform: translateX(34px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    }
+    .toggle-knob .icon-sun,
+    .toggle-knob .icon-moon { transition: opacity 0.3s, transform 0.4s; position: absolute; }
+    .toggle-knob .icon-sun  { opacity: 1; transform: scale(1) rotate(0deg); }
+    .toggle-knob .icon-moon { opacity: 0; transform: scale(0.5) rotate(-30deg); }
+    body.dark .toggle-knob .icon-sun  { opacity: 0; transform: scale(0.5) rotate(30deg); }
+    body.dark .toggle-knob .icon-moon { opacity: 1; transform: scale(1) rotate(0deg); }
+
+    /* ========== LANGUAGE DRAWER ========== */
+    .lang-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--overlay);
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .lang-overlay.visible { opacity: 1; pointer-events: auto; }
+
+    .lang-drawer {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%;
+      max-width: 460px;
+      background: var(--card);
+      border-radius: 22px 22px 0 0;
+      padding: 10px 20px 36px;
+      z-index: 101;
+      transition: transform 0.38s cubic-bezier(.4,0,.2,1);
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.18);
+    }
+    .lang-drawer.visible { transform: translateX(-50%) translateY(0); }
+
+    .drawer-handle {
+      width: 40px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--muted);
+      margin: 8px auto 20px;
+      opacity: 0.4;
+    }
+
+    .drawer-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      color: var(--text);
+    }
+
+    .lang-list { display: flex; flex-direction: column; gap: 3px; }
+
+    .lang-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      background: transparent;
+    }
+    .lang-option:hover { background: var(--bg); }
+    .lang-option:active { transform: scale(0.98); }
+
+    .lang-flag {
+      font-size: 26px;
+      width: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lang-text {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .lang-native {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .lang-english {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .lang-check {
+      color: var(--accent-veg);
+      font-size: 18px;
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .lang-option.active .lang-check { opacity: 1; }
+
+    /* ========== HERO ========== */
+    .hero {
+      padding: 24px 16px 20px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.4s, border-color 0.4s;
+    }
+    .hero-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--accent-veg);
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.25;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--accent-veg);
+    }
+    .hero-sub {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--muted);
+      max-width: 90%;
+    }
+
+    /* ========== SECTION ========== */
+    .section {
+      padding: 22px 16px 18px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.4s, border-color 0.4s;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 16px;
+    }
+    .section-icon {
+      font-size: 20px;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .section-icon.veg   { background: var(--accent-veg-light); }
+    .section-icon.grain { background: var(--accent-grain-light); }
+    .section-label {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .section-count {
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    .crop-grid { display: flex; flex-direction: column; gap: 10px; }
+
+    .crop {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      background: var(--bg);
+      border-radius: 12px;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .crop:active { transform: scale(0.98); }
+
+    .crop-emoji {
+      font-size: 32px;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .crop-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .crop-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .crop-trend {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .crop-trend .up {
+      color: var(--accent-veg);
+      font-weight: 600;
+    }
+    .crop-trend .down {
+      color: #d9534f;
+      font-weight: 600;
+    }
+    .crop-price {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+    .crop-price .amount {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .crop-price .unit {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ========== FOOTER ========== */
+    .footer-hint {
+      padding: 16px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      background: var(--bg);
+      transition: background 0.4s;
+    }
+
+    /* ========== LOADING STATE ========== */
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .error-message {
+      padding: 16px;
+      margin: 16px;
+      background: rgba(217, 83, 79, 0.1);
+      border: 1px solid rgba(217, 83, 79, 0.3);
+      border-radius: 12px;
+      color: #d9534f;
+      font-size: 14px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="location">
+      <span class="pin">📍</span>
+      <span class="loc-text" data-i18n="location"></span>
+    </div>
+
+    <div class="lang-btn" id="langBtn" tabindex="0" role="button" aria-label="Select language" onclick="toggleDrawer()">
+      <span class="globe">🌐</span>
+      <span class="lang-code" id="langCode">हिन्दी</span>
+      <span class="chevron">▼</span>
+    </div>
+
+    <div class="toggle-wrap" onclick="toggleTheme()" tabindex="0" role="button" aria-label="Toggle dark mode">
+      <div class="toggle-track">
+        <div class="t-star t-star-1"></div>
+        <div class="t-star t-star-2"></div>
+        <div class="t-star t-star-3"></div>
+        <div class="t-cloud t-cloud-1"></div>
+        <div class="t-cloud t-cloud-2"></div>
+        <div class="toggle-knob">
+          <span class="icon-sun">☀️</span>
+          <span class="icon-moon">🌙</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-label" data-i18n="heroLabel"></div>
+    <h1 class="hero-title" data-i18n-html="heroTitle"></h1>
+    <p class="hero-sub" data-i18n="heroSub"></p>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- VEGETABLES -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon veg">🥬</div>
+        <span class="section-label" data-i18n="vegetables"></span>
+        <span class="section-count" id="vegCount" data-i18n="vegCount"></span>
+      </div>
+      <div class="crop-grid" id="vegetablesGrid">
+        <div class="loading">Loading vegetables...</div>
+      </div>
+    </div>
+
+    <!-- GRAINS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon grain">🌾</div>
+        <span class="section-label" data-i18n="grains"></span>
+        <span class="section-count" id="grainCount" data-i18n="grainCount"></span>
+      </div>
+      <div class="crop-grid" id="grainsGrid">
+        <div class="loading">Loading grains...</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer-hint">
+    <span>🔄 <span data-i18n="updated"></span></span>
+  </div>
+
+</div>
+
+<!-- ===== LANGUAGE DRAWER ===== -->
+<div class="lang-overlay" id="langOverlay" onclick="closeDrawer()"></div>
+<div class="lang-drawer" id="langDrawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title" data-i18n="chooseLang"></div>
+  <div class="lang-list" id="langList"></div>
+</div>
+
+<script>
+/* ============================================================
+   API CONFIGURATION
+   ============================================================ */
+const API_BASE_URL = 'https://cvaxb6t5aa.execute-api.ap-south-1.amazonaws.com/prod';
+
+/* ============================================================
+   TRANSLATIONS
+   ============================================================ */
+const langs = {
+  hi: {
+    code: "हिन्दी",
+    english: "Hindi",
+    location: "लखनौ, उत्तर प्रदेश",
+    heroLabel: "🚀 भारत के लिए AI",
+    heroTitle: "हर फसल के लिए<br/><em>स्मार्ट दाम</em>",
+    heroSub: "AI द्वारा लाइव फसल दाम — किसानों को हर दिन बेहतर निर्णय लेने में मदद।",
+    vegetables: "सब्जियाँ",
+    vegCount: "2 आइटम",
+    grains: "अनाज",
+    grainCount: "1 आइटम",
+    onion: "प्याज़",
+    potato: "आलू",
+    wheat: "गेहूँ",
+    tomato: "टमाटर",
+    rice: "चावल",
+    today: "आज",
+    perQuintal: "प्रति कुंटल",
+    updated: "अभी अपडेट हुआ",
+    chooseLang: "भाषा चुनें",
+    loading: "लोड हो रहा है...",
+    error: "डेटा लोड करने में त्रुटि"
+  },
+  en: {
+    code: "English",
+    english: "English",
+    location: "Lucknow, Uttar Pradesh",
+    heroLabel: "🚀 AI for Bharat",
+    heroTitle: "Smart prices<br/>for <em>every harvest</em>",
+    heroSub: "Live crop rates powered by AI — helping farmers make better decisions every day.",
+    vegetables: "Vegetables",
+    vegCount: "2 items",
+    grains: "Grains",
+    grainCount: "1 item",
+    onion: "Onion",
+    potato: "Potato",
+    wheat: "Wheat",
+    tomato: "Tomato",
+    rice: "Rice",
+    today: "today",
+    perQuintal: "per quintal",
+    updated: "Prices updated just now",
+    chooseLang: "Choose Language",
+    loading: "Loading...",
+    error: "Error loading data"
+  },
+  mr: {
+    code: "मराठी",
+    english: "Marathi",
+    location: "लखनौ, उत्तरक्षेत्र",
+    heroLabel: "🚀 भारतसाठी AI",
+    heroTitle: "प्रत्येक पिकासाठी<br/><em>स्मार्ट दाम</em>",
+    heroSub: "AI द्वारे लाइव पिकाचे दाम — शेतकरींना दरोदर चांगले निर्णय घेण्यास मदत.",
+    vegetables: "भाज्या",
+    vegCount: "2 आइटम",
+    grains: "धान्य",
+    grainCount: "1 आइटम",
+    onion: "कांदा",
+    potato: "बटाटा",
+    wheat: "गव्हाचा",
+    tomato: "टोमॅटो",
+    rice: "तांदूळ",
+    today: "आज",
+    perQuintal: "प्रति क्विंटल",
+    updated: "आत्ता अपडेट झाले",
+    chooseLang: "भाषा निवडा",
+    loading: "लोड होत आहे...",
+    error: "डेटा लोड करताना त्रुटी"
+  },
+  ta: {
+    code: "தமிழ்",
+    english: "Tamil",
+    location: "லக்கனோ, உத்தர பிரதேசம்",
+    heroLabel: "🚀 பாரதத்திற்கு AI",
+    heroTitle: "ஒவ்வொரு அஷ்ஷக்காக<br/><em>ஸ்மார்ட் விலை</em>",
+    heroSub: "AI மத்தி வாழ்க்கை பண்ணி விலை — விவசாயிகளுக்கு தினமும் சரியான முடிவு எடுத்த உதவி.",
+    vegetables: "வெளிக்கொள்ளுகள்",
+    vegCount: "2 பொருட்கள்",
+    grains: "தடி",
+    grainCount: "1 பொருள்",
+    onion: "வெங்காயம்",
+    potato: "ஆள்வந்தா",
+    wheat: "கோதுமை",
+    tomato: "தக்காளி",
+    rice: "அரிசி",
+    today: "இன்று",
+    perQuintal: "ஒரு குட்டி விலை",
+    updated: "இப்பவே அப்டேட் ஆச்சு",
+    chooseLang: "மொழி தோர்ப்பு",
+    loading: "ஏற்றுகிறது...",
+    error: "தரவு ஏற்றுவதில் பிழை"
+  }
+};
+
+const langOrder = ['hi','en','mr','ta'];
+let currentLang = 'hi';
+let cropData = null;
+
+/* ============================================================
+   CROP EMOJI MAPPING
+   ============================================================ */
+const cropEmojis = {
+  onion: '🧅',
+  potato: '🥔',
+  wheat: '🌾',
+  tomato: '🍅',
+  rice: '🌾',
+  default: '🌱'
+};
+
+/* ============================================================
+   API FUNCTIONS
+   ============================================================ */
+     console.log("Calling:", `${API_BASE_URL}/api/crops`);
+async function fetchCropPrices() {
+  try {
+    const url = `${API_BASE_URL}/api/crops`;
+    console.log("Calling:", url);
+
+    const response = await fetch(url);   // ← MUST exist
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching crop prices:", error);
+    throw error;
+  }
+}
+
+/* ============================================================
+   RENDER CROPS
+   ============================================================ */
+function renderCrops(data) {
+  if (!data) return;
+  
+  cropData = data;
+  
+  // Separate vegetables and grains
+  const vegetables = data.crops ? data.crops.filter(c => c.category === 'vegetable') : [];
+  const grains = data.crops ? data.crops.filter(c => c.category === 'grain') : [];
+  
+  renderCropGrid('vegetablesGrid', vegetables);
+  renderCropGrid('grainsGrid', grains);
+  
+  // Update counts
+  updateCounts(vegetables.length, grains.length);
+}
+
+function renderCropGrid(gridId, crops) {
+  const grid = document.getElementById(gridId);
+  
+  if (!crops || crops.length === 0) {
+    grid.innerHTML = '<div class="loading">No data available</div>';
+    return;
+  }
+  
+  grid.innerHTML = crops.map(crop => {
+    const emoji = cropEmojis[crop.name.toLowerCase()] || cropEmojis.default;
+    const trendClass = crop.change >= 0 ? 'up' : 'down';
+    const trendSymbol = crop.change >= 0 ? '▲' : '▼';
+    const trendPercent = Math.abs(crop.change).toFixed(1);
+    
+    return `
+      <div class="crop">
+        <span class="crop-emoji">${emoji}</span>
+        <div class="crop-info">
+          <span class="crop-name" data-i18n="${crop.name.toLowerCase()}">${crop.name}</span>
+          <span class="crop-trend">
+            <span class="${trendClass}">${trendSymbol} ${trendPercent}%</span> 
+            <span data-i18n="today"></span>
+          </span>
+        </div>
+        <div class="crop-price">
+          <span class="amount">₹${crop.price.toLocaleString('en-IN')}</span>
+          <span class="unit" data-i18n="perQuintal"></span>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  // Reapply translations
+  applyLang(currentLang);
+}
+
+function updateCounts(vegCount, grainCount) {
+  const t = langs[currentLang];
+  document.getElementById('vegCount').textContent = `${vegCount} ${vegCount === 1 ? 'item' : 'items'}`;
+  document.getElementById('grainCount').textContent = `${grainCount} ${grainCount === 1 ? 'item' : 'items'}`;
+}
+
+function showError(message) {
+  const vegGrid = document.getElementById('vegetablesGrid');
+  const grainGrid = document.getElementById('grainsGrid');
+  
+  const errorHTML = `<div class="error-message">${message}</div>`;
+  vegGrid.innerHTML = errorHTML;
+  grainGrid.innerHTML = errorHTML;
+}
+
+/* ============================================================
+   INITIALIZE DATA
+   ============================================================ */
+async function initializeData() {
+  try {
+    const data = await fetchCropPrices();
+    renderCrops(data);
+  } catch (error) {
+    const t = langs[currentLang];
+    showError(t.error || 'Error loading data');
+    
+    // Fallback to static data if API fails
+    renderStaticData();
+  }
+}
+
+/* ============================================================
+   FALLBACK STATIC DATA
+   ============================================================ */
+function renderStaticData() {
+  const staticData = {
+    crops: [
+      { name: 'Onion', price: 2140, change: 2.3, category: 'vegetable' },
+      { name: 'Potato', price: 1680, change: -1.8, category: 'vegetable' },
+      { name: 'Wheat', price: 2520, change: 0.9, category: 'grain' }
+    ]
+  };
+  
+  renderCrops(staticData);
+}
+
+/* ============================================================
+   APPLY LANGUAGE
+   ============================================================ */
+function applyLang(code) {
+  const t = langs[code];
+  if (!t) return;
+  currentLang = code;
+
+  // Update body classes (preserve dark if active)
+  const isDark = document.body.classList.contains('dark');
+  document.body.className = (isDark ? 'dark ' : '') + 'lang-' + code;
+  document.documentElement.setAttribute('lang', code);
+
+  // Header pill
+  document.getElementById('langCode').textContent = t.code;
+
+  // Simple text bindings
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (t[key] !== undefined) el.textContent = t[key];
+  });
+
+  // HTML bindings (hero title with <em>)
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const key = el.dataset.i18nHtml;
+    if (t[key] !== undefined) el.innerHTML = t[key];
+  });
+
+  // Update active state in drawer
+  document.querySelectorAll('.lang-option').forEach(el => {
+    el.classList.toggle('active', el.dataset.lang === code);
+  });
+}
+
+/* ============================================================
+   BUILD LANGUAGE PICKER LIST
+   ============================================================ */
+function buildLangList() {
+  const list = document.getElementById('langList');
+  list.innerHTML = '';
+  langOrder.forEach(code => {
+    const t = langs[code];
+    const el = document.createElement('div');
+    el.className = 'lang-option' + (code === currentLang ? ' active' : '');
+    el.dataset.lang = code;
+    el.innerHTML =
+      '<span class="lang-flag">🇮🇳</span>' +
+      '<div class="lang-text">' +
+        '<span class="lang-native">' + t.code + '</span>' +
+        '<span class="lang-english">' + t.english + '</span>' +
+      '</div>' +
+      '<div class="lang-check">✓</div>';
+    el.addEventListener('click', () => { applyLang(code); closeDrawer(); });
+    list.appendChild(el);
+  });
+}
+
+/* ============================================================
+   DRAWER
+   ============================================================ */
+function toggleDrawer() {
+  document.getElementById('langDrawer').classList.contains('visible') ? closeDrawer() : openDrawer();
+}
+function openDrawer() {
+  buildLangList();
+  document.getElementById('langOverlay').classList.add('visible');
+  document.getElementById('langDrawer').classList.add('visible');
+  document.getElementById('langBtn').classList.add('open');
+}
+function closeDrawer() {
+  document.getElementById('langOverlay').classList.remove('visible');
+  document.getElementById('langDrawer').classList.remove('visible');
+  document.getElementById('langBtn').classList.remove('open');
+}
+
+/* ============================================================
+   THEME TOGGLE
+   ============================================================ */
+function toggleTheme() {
+  document.body.classList.toggle('dark');
+}
+
+/* ============================================================
+   KEYBOARD
+   ============================================================ */
+document.getElementById('langBtn').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDrawer(); }
+});
+document.querySelector('.toggle-wrap').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleTheme(); }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+/* ============================================================
+   INIT
+   ============================================================ */
+applyLang('hi');
+initializeData();
+
+// Auto-refresh every 5 minutes
+setInterval(initializeData, 5 * 60 * 1000);
+</script>
+</body>
+</html>
