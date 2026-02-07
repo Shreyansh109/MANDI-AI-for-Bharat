@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AI for Bharat</title>
+  <title>AI for Bharat - Crop Price Advisor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 
   <style>
-    /* ========== THEME ========== */
     :root {
       --bg: #f0ede8;
       --bg-deep: #e6e0d8;
@@ -25,7 +24,9 @@
       --toggle-bg: #cbd5e0;
       --toggle-knob: #fff;
       --toggle-shadow: rgba(0,0,0,0.15);
-      --overlay: rgba(0,0,0,0.35);
+      --overlay: rgba(0,0,0,0.55);
+      --blue: #3b82f6;
+      --blue-light: #dbeafe;
     }
 
     body.dark {
@@ -41,9 +42,10 @@
       --accent-grain-light: rgba(219,160,50,0.12);
       --border: #2e2e36;
       --toggle-bg: #2a3040;
-      --toggle-knob: #fff;
       --toggle-shadow: rgba(0,0,0,0.4);
-      --overlay: rgba(0,0,0,0.55);
+      --overlay: rgba(0,0,0,0.65);
+      --blue: #60a5fa;
+      --blue-light: rgba(96,165,250,0.15);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -55,19 +57,17 @@
       min-height: 100vh;
       transition: background 0.4s, color 0.4s;
       -webkit-font-smoothing: antialiased;
+      padding-bottom: 20px;
     }
 
-    /* Script-specific font stacks */
     body.lang-hi, body.lang-mr { font-family: 'Noto Sans Devanagari', 'DM Sans', sans-serif; }
-    body.lang-ta               { font-family: 'Noto Sans Tamil',      'DM Sans', sans-serif; }
-    body.lang-en               { font-family: 'DM Sans', sans-serif; }
+    body.lang-ta { font-family: 'Noto Sans Tamil', 'DM Sans', sans-serif; }
+    body.lang-en { font-family: 'DM Sans', sans-serif; }
 
     .app {
-      max-width: 460px;
+      max-width: 480px;
       margin: 0 auto;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
     }
 
     /* ========== HEADER ========== */
@@ -79,10 +79,10 @@
       gap: 8px;
       background: var(--card);
       border-bottom: 1px solid var(--border);
-      transition: background 0.4s, border-color 0.4s;
       position: sticky;
       top: 0;
       z-index: 10;
+      box-shadow: 0 1px 3px var(--card-shadow);
     }
 
     .location {
@@ -96,7 +96,6 @@
       padding: 6px 11px;
       border-radius: 10px;
       border: 1px solid var(--border);
-      transition: background 0.4s, border-color 0.4s;
       white-space: nowrap;
       flex-shrink: 1;
       min-width: 0;
@@ -104,7 +103,6 @@
     .location .pin { font-size: 14px; flex-shrink: 0; }
     .location .loc-text { overflow: hidden; text-overflow: ellipsis; }
 
-    /* ===== LANG BUTTON ===== */
     .lang-btn {
       display: flex;
       align-items: center;
@@ -133,7 +131,6 @@
     }
     .lang-btn.open .chevron { transform: rotate(180deg); }
 
-    /* ========== TOGGLE SWITCH ========== */
     .toggle-wrap {
       position: relative;
       width: 68px;
@@ -204,7 +201,6 @@
       justify-content: center;
       font-size: 14px;
       transition: transform 0.45s cubic-bezier(.4,0,.2,1), box-shadow 0.3s;
-      will-change: transform;
     }
     body.dark .toggle-knob {
       transform: translateX(34px);
@@ -217,7 +213,329 @@
     body.dark .toggle-knob .icon-sun  { opacity: 0; transform: scale(0.5) rotate(30deg); }
     body.dark .toggle-knob .icon-moon { opacity: 1; transform: scale(1) rotate(0deg); }
 
-    /* ========== LANGUAGE DRAWER ========== */
+    /* ========== HERO ========== */
+    .hero {
+      padding: 24px 16px 20px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--accent-veg);
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.25;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--accent-veg);
+    }
+    .hero-sub {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--muted);
+      max-width: 90%;
+    }
+
+    /* ========== CROP CARDS ========== */
+    .crops-container {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .crop-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px var(--card-shadow);
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .crop-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--card-shadow);
+    }
+
+    .crop-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .crop-emoji {
+      font-size: 48px;
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      border-radius: 12px;
+    }
+
+    .crop-title-section {
+      flex: 1;
+    }
+
+    .crop-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .crop-category {
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+    .crop-category.vegetable {
+      background: var(--accent-veg-light);
+      color: var(--accent-veg);
+    }
+    .crop-category.grain {
+      background: var(--accent-grain-light);
+      color: var(--accent-grain);
+    }
+
+    /* Market Recommendation */
+    .market-recommendation {
+      background: var(--blue-light);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+      border: 1px solid var(--blue);
+    }
+
+    .market-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--blue);
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .market-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+      text-transform: capitalize;
+    }
+
+    .market-state {
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: capitalize;
+    }
+
+    .market-price {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--blue);
+      margin-top: 8px;
+    }
+
+    .market-price .unit {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-left: 4px;
+    }
+
+    /* Explanation */
+    .explanation {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text);
+    }
+
+    .explanation-icon {
+      display: inline-block;
+      margin-right: 6px;
+      font-size: 16px;
+    }
+
+    /* 7-Day Forecast */
+    .forecast-section {
+      margin-top: 16px;
+    }
+
+    .forecast-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .forecast-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .expand-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .expand-btn:hover {
+      background: var(--border);
+    }
+    .expand-btn .arrow {
+      display: inline-block;
+      transition: transform 0.3s;
+      margin-left: 4px;
+    }
+    .expand-btn.expanded .arrow {
+      transform: rotate(180deg);
+    }
+
+    .forecast-grid {
+      display: none;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .forecast-grid.visible {
+      display: grid;
+    }
+
+    .forecast-day {
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 10px 6px;
+      text-align: center;
+      border: 1px solid var(--border);
+      transition: transform 0.2s, background 0.2s;
+    }
+    .forecast-day:hover {
+      transform: translateY(-2px);
+      background: var(--card);
+    }
+
+    .forecast-date {
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .forecast-price {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .forecast-range {
+      font-size: 9px;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    /* Price Range Indicator */
+    .price-range {
+      margin-top: 12px;
+      padding: 12px;
+      background: var(--bg);
+      border-radius: 10px;
+    }
+
+    .range-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .range-bar {
+      height: 6px;
+      background: linear-gradient(to right, #ef4444, #fbbf24, #22c55e);
+      border-radius: 3px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .range-indicator {
+      position: absolute;
+      top: -4px;
+      width: 14px;
+      height: 14px;
+      background: var(--text);
+      border-radius: 50%;
+      border: 2px solid var(--card);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    /* Loading & Error States */
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent-veg);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .error-message {
+      padding: 20px;
+      margin: 20px 16px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 12px;
+      color: #ef4444;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* Language Drawer */
     .lang-overlay {
       position: fixed;
       inset: 0;
@@ -234,7 +552,7 @@
       bottom: 0; left: 50%;
       transform: translateX(-50%) translateY(100%);
       width: 100%;
-      max-width: 460px;
+      max-width: 480px;
       background: var(--card);
       border-radius: 22px 22px 0 0;
       padding: 10px 20px 36px;
@@ -305,175 +623,41 @@
     }
     .lang-option.active .lang-check { opacity: 1; }
 
-    /* ========== HERO ========== */
-    .hero {
-      padding: 24px 16px 20px;
-      background: var(--card);
-      border-bottom: 1px solid var(--border);
-      transition: background 0.4s, border-color 0.4s;
-    }
-    .hero-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      color: var(--accent-veg);
-      letter-spacing: 0.5px;
-      margin-bottom: 10px;
-    }
-    .hero-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 32px;
-      font-weight: 700;
-      line-height: 1.25;
-      margin-bottom: 10px;
-      color: var(--text);
-    }
-    .hero-title em {
-      font-style: italic;
-      color: var(--accent-veg);
-    }
-    .hero-sub {
-      font-size: 14px;
-      line-height: 1.6;
-      color: var(--muted);
-      max-width: 90%;
-    }
-
-    /* ========== SECTION ========== */
-    .section {
-      padding: 22px 16px 18px;
-      background: var(--card);
-      border-bottom: 1px solid var(--border);
-      transition: background 0.4s, border-color 0.4s;
-    }
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      margin-bottom: 16px;
-    }
-    .section-icon {
-      font-size: 20px;
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .section-icon.veg   { background: var(--accent-veg-light); }
-    .section-icon.grain { background: var(--accent-grain-light); }
-    .section-label {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .section-count {
-      font-size: 12px;
-      color: var(--muted);
-      margin-left: auto;
-    }
-
-    .crop-grid { display: flex; flex-direction: column; gap: 10px; }
-
-    .crop {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px;
-      background: var(--bg);
-      border-radius: 12px;
-      transition: background 0.2s, transform 0.1s;
-    }
-    .crop:active { transform: scale(0.98); }
-
-    .crop-emoji {
-      font-size: 32px;
-      width: 48px;
-      height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .crop-info {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-    .crop-name {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .crop-trend {
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .crop-trend .up {
-      color: var(--accent-veg);
-      font-weight: 600;
-    }
-    .crop-trend .down {
-      color: #d9534f;
-      font-weight: 600;
-    }
-    .crop-price {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 2px;
-    }
-    .crop-price .amount {
-      font-size: 17px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .crop-price .unit {
+    /* Footer */
+    .footer {
+      padding: 20px 16px;
+      text-align: center;
       font-size: 11px;
       color: var(--muted);
+      line-height: 1.6;
     }
 
-    /* ========== FOOTER ========== */
-    .footer-hint {
-      padding: 16px;
-      text-align: center;
-      font-size: 12px;
-      color: var(--muted);
+    .disclaimer {
       background: var(--bg);
-      transition: background 0.4s;
-    }
-
-    /* ========== LOADING STATE ========== */
-    .loading {
-      text-align: center;
-      padding: 20px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .error-message {
-      padding: 16px;
+      padding: 12px 16px;
       margin: 16px;
-      background: rgba(217, 83, 79, 0.1);
-      border: 1px solid rgba(217, 83, 79, 0.3);
-      border-radius: 12px;
-      color: #d9534f;
-      font-size: 14px;
+      border-radius: 10px;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.5;
       text-align: center;
+      border: 1px solid var(--border);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 400px) {
+      .forecast-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .forecast-day:nth-child(n+5) {
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
 
 <div class="app">
-
   <!-- HEADER -->
   <div class="header">
     <div class="location">
@@ -481,13 +665,13 @@
       <span class="loc-text" data-i18n="location"></span>
     </div>
 
-    <div class="lang-btn" id="langBtn" tabindex="0" role="button" aria-label="Select language" onclick="toggleDrawer()">
+    <div class="lang-btn" id="langBtn" tabindex="0" role="button" onclick="toggleDrawer()">
       <span class="globe">🌐</span>
       <span class="lang-code" id="langCode">हिन्दी</span>
       <span class="chevron">▼</span>
     </div>
 
-    <div class="toggle-wrap" onclick="toggleTheme()" tabindex="0" role="button" aria-label="Toggle dark mode">
+    <div class="toggle-wrap" onclick="toggleTheme()" tabindex="0" role="button">
       <div class="toggle-track">
         <div class="t-star t-star-1"></div>
         <div class="t-star t-star-2"></div>
@@ -509,43 +693,26 @@
     <p class="hero-sub" data-i18n="heroSub"></p>
   </div>
 
-  <!-- CONTENT -->
-  <div class="content">
-
-    <!-- VEGETABLES -->
-    <div class="section">
-      <div class="section-header">
-        <div class="section-icon veg">🥬</div>
-        <span class="section-label" data-i18n="vegetables"></span>
-        <span class="section-count" id="vegCount" data-i18n="vegCount"></span>
-      </div>
-      <div class="crop-grid" id="vegetablesGrid">
-        <div class="loading">Loading vegetables...</div>
-      </div>
+  <!-- MAIN CONTENT -->
+  <div id="mainContent">
+    <div class="loading">
+      <div class="loading-spinner"></div>
+      <div data-i18n="loading"></div>
     </div>
+  </div>
 
-    <!-- GRAINS -->
-    <div class="section">
-      <div class="section-header">
-        <div class="section-icon grain">🌾</div>
-        <span class="section-label" data-i18n="grains"></span>
-        <span class="section-count" id="grainCount" data-i18n="grainCount"></span>
-      </div>
-      <div class="crop-grid" id="grainsGrid">
-        <div class="loading">Loading grains...</div>
-      </div>
-    </div>
-
+  <!-- DISCLAIMER -->
+  <div class="disclaimer" id="disclaimer" style="display: none;">
+    <span data-i18n="disclaimer"></span>
   </div>
 
   <!-- FOOTER -->
-  <div class="footer-hint">
-    <span>🔄 <span data-i18n="updated"></span></span>
+  <div class="footer">
+    <div data-i18n="project"></div>
   </div>
-
 </div>
 
-<!-- ===== LANGUAGE DRAWER ===== -->
+<!-- LANGUAGE DRAWER -->
 <div class="lang-overlay" id="langOverlay" onclick="closeDrawer()"></div>
 <div class="lang-drawer" id="langDrawer">
   <div class="drawer-handle"></div>
@@ -557,7 +724,7 @@
 /* ============================================================
    API CONFIGURATION
    ============================================================ */
-const API_BASE_URL = 'https://cvaxb6t5aa.execute-api.ap-south-1.amazonaws.com/prod';
+const API_URL = 'https://cvaxb6t5aa.execute-api.ap-south-1.amazonaws.com/prod/api/data';
 
 /* ============================================================
    TRANSLATIONS
@@ -569,22 +736,29 @@ const langs = {
     location: "लखनौ, उत्तर प्रदेश",
     heroLabel: "🚀 भारत के लिए AI",
     heroTitle: "हर फसल के लिए<br/><em>स्मार्ट दाम</em>",
-    heroSub: "AI द्वारा लाइव फसल दाम — किसानों को हर दिन बेहतर निर्णय लेने में मदद।",
-    vegetables: "सब्जियाँ",
-    vegCount: "2 आइटम",
-    grains: "अनाज",
-    grainCount: "1 आइटम",
+    heroSub: "AI द्वारा लाइव फसल दाम और 7-दिन का पूर्वानुमान — किसानों को सबसे अच्छी मंडी खोजने में मदद।",
     onion: "प्याज़",
     potato: "आलू",
     wheat: "गेहूँ",
     tomato: "टमाटर",
     rice: "चावल",
-    today: "आज",
+    vegetable: "सब्जी",
+    grain: "अनाज",
+    recommendedMarket: "सुझाई गई मंडी",
+    avgPrice: "औसत दाम (7 दिन)",
     perQuintal: "प्रति कुंटल",
-    updated: "अभी अपडेट हुआ",
+    forecast7Days: "📊 7-दिन का पूर्वानुमान",
+    viewForecast: "देखें",
+    hideForecast: "छिपाएं",
+    priceRange: "दाम सीमा",
+    lower: "कम",
+    upper: "ज़्यादा",
     chooseLang: "भाषा चुनें",
-    loading: "लोड हो रहा है...",
-    error: "डेटा लोड करने में त्रुटि"
+    loading: "डेटा लोड हो रहा है...",
+    error: "डेटा लोड करने में त्रुटि",
+    checkConnection: "कृपया अपना इंटरनेट कनेक्शन जांचें",
+    disclaimer: "कीमतें सार्वजनिक रूप से उपलब्ध डेटा के आधार पर सलाहकार पूर्वानुमान हैं। वास्तविक बाजार कीमतें भिन्न हो सकती हैं।",
+    project: "AI for Bharat – Crop Price & Market Advisor"
   },
   en: {
     code: "English",
@@ -592,22 +766,29 @@ const langs = {
     location: "Lucknow, Uttar Pradesh",
     heroLabel: "🚀 AI for Bharat",
     heroTitle: "Smart prices<br/>for <em>every harvest</em>",
-    heroSub: "Live crop rates powered by AI — helping farmers make better decisions every day.",
-    vegetables: "Vegetables",
-    vegCount: "2 items",
-    grains: "Grains",
-    grainCount: "1 item",
+    heroSub: "Live crop rates with 7-day AI forecasts — helping farmers find the best markets.",
     onion: "Onion",
     potato: "Potato",
     wheat: "Wheat",
     tomato: "Tomato",
     rice: "Rice",
-    today: "today",
+    vegetable: "Vegetable",
+    grain: "Grain",
+    recommendedMarket: "Recommended Market",
+    avgPrice: "Average Price (7 days)",
     perQuintal: "per quintal",
-    updated: "Prices updated just now",
+    forecast7Days: "📊 7-Day Forecast",
+    viewForecast: "View",
+    hideForecast: "Hide",
+    priceRange: "Price Range",
+    lower: "Low",
+    upper: "High",
     chooseLang: "Choose Language",
-    loading: "Loading...",
-    error: "Error loading data"
+    loading: "Loading data...",
+    error: "Error loading data",
+    checkConnection: "Please check your internet connection",
+    disclaimer: "Prices are advisory predictions based on publicly available data. Actual market prices may vary.",
+    project: "AI for Bharat – Crop Price & Market Advisor"
   },
   mr: {
     code: "मराठी",
@@ -615,224 +796,292 @@ const langs = {
     location: "लखनौ, उत्तरक्षेत्र",
     heroLabel: "🚀 भारतसाठी AI",
     heroTitle: "प्रत्येक पिकासाठी<br/><em>स्मार्ट दाम</em>",
-    heroSub: "AI द्वारे लाइव पिकाचे दाम — शेतकरींना दरोदर चांगले निर्णय घेण्यास मदत.",
-    vegetables: "भाज्या",
-    vegCount: "2 आइटम",
-    grains: "धान्य",
-    grainCount: "1 आइटम",
+    heroSub: "AI द्वारे लाइव पिकाचे दाम आणि 7-दिवसांचा अंदाज — शेतकरींना सर्वोत्तम मंडी शोधण्यास मदत.",
     onion: "कांदा",
     potato: "बटाटा",
     wheat: "गव्हाचा",
     tomato: "टोमॅटो",
     rice: "तांदूळ",
-    today: "आज",
+    vegetable: "भाजी",
+    grain: "धान्य",
+    recommendedMarket: "शिफारस केलेली मंडी",
+    avgPrice: "सरासरी किंमत (7 दिवस)",
     perQuintal: "प्रति क्विंटल",
-    updated: "आत्ता अपडेट झाले",
+    forecast7Days: "📊 7-दिवसांचा अंदाज",
+    viewForecast: "पहा",
+    hideForecast: "लपवा",
+    priceRange: "किंमत श्रेणी",
+    lower: "कमी",
+    upper: "जास्त",
     chooseLang: "भाषा निवडा",
-    loading: "लोड होत आहे...",
-    error: "डेटा लोड करताना त्रुटी"
+    loading: "डेटा लोड होत आहे...",
+    error: "डेटा लोड करताना त्रुटी",
+    checkConnection: "कृपया तुमचे इंटरनेट कनेक्शन तपासा",
+    disclaimer: "किंमती सार्वजनिक डेटावर आधारित सल्लागार अंदाज आहेत. वास्तविक बाजार किंमती भिन्न असू शकतात.",
+    project: "AI for Bharat – Crop Price & Market Advisor"
   },
   ta: {
     code: "தமிழ்",
     english: "Tamil",
     location: "லக்கனோ, உத்தர பிரதேசம்",
     heroLabel: "🚀 பாரதத்திற்கு AI",
-    heroTitle: "ஒவ்வொரு அஷ்ஷக்காக<br/><em>ஸ்மார்ட் விலை</em>",
-    heroSub: "AI மத்தி வாழ்க்கை பண்ணி விலை — விவசாயிகளுக்கு தினமும் சரியான முடிவு எடுத்த உதவி.",
-    vegetables: "வெளிக்கொள்ளுகள்",
-    vegCount: "2 பொருட்கள்",
-    grains: "தடி",
-    grainCount: "1 பொருள்",
+    heroTitle: "ஒவ்வொரு அறுவடைக்காக<br/><em>ஸ்மார்ட் விலை</em>",
+    heroSub: "AI மூலம் நேரடி பயிர் விலைகள் மற்றும் 7-நாள் முன்னறிவிப்பு — விவசாயிகளுக்கு சிறந்த சந்தைகளைக் கண்டறிய உதவுகிறது.",
     onion: "வெங்காயம்",
-    potato: "ஆள்வந்தா",
+    potato: "உருளைக்கிழங்கு",
     wheat: "கோதுமை",
     tomato: "தக்காளி",
     rice: "அரிசி",
-    today: "இன்று",
-    perQuintal: "ஒரு குட்டி விலை",
-    updated: "இப்பவே அப்டேட் ஆச்சு",
-    chooseLang: "மொழி தோர்ப்பு",
-    loading: "ஏற்றுகிறது...",
-    error: "தரவு ஏற்றுவதில் பிழை"
+    vegetable: "காய்கறி",
+    grain: "தானியம்",
+    recommendedMarket: "பரிந்துரைக்கப்பட்ட சந்தை",
+    avgPrice: "சராசரி விலை (7 நாட்கள்)",
+    perQuintal: "ஒரு குவிண்டால்",
+    forecast7Days: "📊 7-நாள் முன்னறிவிப்பு",
+    viewForecast: "பார்க்கவும்",
+    hideForecast: "மறைக்கவும்",
+    priceRange: "விலை வரம்பு",
+    lower: "குறைவு",
+    upper: "அதிகம்",
+    chooseLang: "மொழி தேர்வு",
+    loading: "தரவு ஏற்றுகிறது...",
+    error: "தரவு ஏற்றுவதில் பிழை",
+    checkConnection: "உங்கள் இணைய இணைப்பைச் சரிபார்க்கவும்",
+    disclaimer: "விலைகள் பொது தரவின் அடிப்படையிலான ஆலோசனை கணிப்புகள் ஆகும். உண்மையான சந்தை விலைகள் மாறுபடலாம்.",
+    project: "AI for Bharat – Crop Price & Market Advisor"
   }
 };
 
 const langOrder = ['hi','en','mr','ta'];
 let currentLang = 'hi';
-let cropData = null;
+let cropsData = [];
 
 /* ============================================================
-   CROP EMOJI MAPPING
+   CROP METADATA
    ============================================================ */
-const cropEmojis = {
-  onion: '🧅',
-  potato: '🥔',
-  wheat: '🌾',
-  tomato: '🍅',
-  rice: '🌾',
-  default: '🌱'
+const cropMeta = {
+  onion: { emoji: '🧅', category: 'vegetable' },
+  potato: { emoji: '🥔', category: 'vegetable' },
+  tomato: { emoji: '🍅', category: 'vegetable' },
+  wheat: { emoji: '🌾', category: 'grain' },
+  rice: { emoji: '🌾', category: 'grain' }
 };
 
 /* ============================================================
    API FUNCTIONS
    ============================================================ */
-     console.log("Calling:", `${API_BASE_URL}/api/crops`);
-async function fetchCropPrices() {
+async function fetchCropData() {
   try {
-    const url = `${API_BASE_URL}/api/crops`;
-    console.log("Calling:", url);
-
-    const response = await fetch(url);   // ← MUST exist
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
+    const response = await fetch(API_URL);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error("Error fetching crop prices:", error);
+    console.error('API Error:', error);
     throw error;
   }
 }
 
 /* ============================================================
-   RENDER CROPS
+   RENDER FUNCTIONS
    ============================================================ */
-function renderCrops(data) {
-  if (!data) return;
+function renderCrops(apiData) {
+  let crops = [];
   
-  cropData = data;
+  if (apiData?.data?.data && Array.isArray(apiData.data.data)) {
+    crops = apiData.data.data;
+  } else if (apiData?.data && Array.isArray(apiData.data)) {
+    crops = apiData.data;
+  }
   
-  // Separate vegetables and grains
-  const vegetables = data.crops ? data.crops.filter(c => c.category === 'vegetable') : [];
-  const grains = data.crops ? data.crops.filter(c => c.category === 'grain') : [];
-  
-  renderCropGrid('vegetablesGrid', vegetables);
-  renderCropGrid('grainsGrid', grains);
-  
-  // Update counts
-  updateCounts(vegetables.length, grains.length);
-}
-
-function renderCropGrid(gridId, crops) {
-  const grid = document.getElementById(gridId);
-  
-  if (!crops || crops.length === 0) {
-    grid.innerHTML = '<div class="loading">No data available</div>';
+  if (crops.length === 0) {
+    showError('No data available');
     return;
   }
   
-  grid.innerHTML = crops.map(crop => {
-    const emoji = cropEmojis[crop.name.toLowerCase()] || cropEmojis.default;
-    const trendClass = crop.change >= 0 ? 'up' : 'down';
-    const trendSymbol = crop.change >= 0 ? '▲' : '▼';
-    const trendPercent = Math.abs(crop.change).toFixed(1);
-    
-    return `
-      <div class="crop">
-        <span class="crop-emoji">${emoji}</span>
-        <div class="crop-info">
-          <span class="crop-name" data-i18n="${crop.name.toLowerCase()}">${crop.name}</span>
-          <span class="crop-trend">
-            <span class="${trendClass}">${trendSymbol} ${trendPercent}%</span> 
-            <span data-i18n="today"></span>
-          </span>
-        </div>
-        <div class="crop-price">
-          <span class="amount">₹${crop.price.toLocaleString('en-IN')}</span>
-          <span class="unit" data-i18n="perQuintal"></span>
-        </div>
-      </div>
-    `;
-  }).join('');
+  cropsData = crops;
   
-  // Reapply translations
+  const container = document.createElement('div');
+  container.className = 'crops-container';
+  
+  crops.forEach(crop => {
+    container.appendChild(createCropCard(crop));
+  });
+  
+  document.getElementById('mainContent').innerHTML = '';
+  document.getElementById('mainContent').appendChild(container);
+  document.getElementById('disclaimer').style.display = 'block';
+  
   applyLang(currentLang);
 }
 
-function updateCounts(vegCount, grainCount) {
+function createCropCard(cropData) {
   const t = langs[currentLang];
-  document.getElementById('vegCount').textContent = `${vegCount} ${vegCount === 1 ? 'item' : 'items'}`;
-  document.getElementById('grainCount').textContent = `${grainCount} ${grainCount === 1 ? 'item' : 'items'}`;
-}
-
-function showError(message) {
-  const vegGrid = document.getElementById('vegetablesGrid');
-  const grainGrid = document.getElementById('grainsGrid');
+  const cropName = cropData.crop;
+  const meta = cropMeta[cropName] || { emoji: '🌱', category: 'vegetable' };
+  const market = cropData.recommended_market;
+  const forecast = cropData.next_7_days_forecast || [];
+  const explanation = cropData.explanation || {};
   
-  const errorHTML = `<div class="error-message">${message}</div>`;
-  vegGrid.innerHTML = errorHTML;
-  grainGrid.innerHTML = errorHTML;
+  const card = document.createElement('div');
+  card.className = 'crop-card';
+  card.dataset.crop = cropName;
+  
+  // Calculate price range
+  const avgPrice = market?.predicted_average_price || 0;
+  const firstDay = forecast[0] || {};
+  const lowerBound = firstDay.lower_bound || avgPrice * 0.95;
+  const upperBound = firstDay.upper_bound || avgPrice * 1.05;
+  
+  card.innerHTML = `
+    <div class="crop-header">
+      <div class="crop-emoji">${meta.emoji}</div>
+      <div class="crop-title-section">
+        <div class="crop-name" data-i18n="${cropName}"></div>
+        <span class="crop-category ${meta.category}" data-i18n="${meta.category}"></span>
+      </div>
+    </div>
+    
+    <div class="market-recommendation">
+      <div class="market-label" data-i18n="recommendedMarket"></div>
+      <div class="market-name">${market?.market || 'N/A'}</div>
+      <div class="market-state">${market?.state || ''}</div>
+      <div class="market-price">
+        ₹${avgPrice.toLocaleString('en-IN')}
+        <span class="unit" data-i18n="perQuintal"></span>
+      </div>
+    </div>
+    
+    <div class="explanation">
+      <span class="explanation-icon">💡</span>
+      <span class="explanation-text"></span>
+    </div>
+    
+    <div class="price-range">
+      <div class="range-label">
+        <span><span data-i18n="lower"></span>: ₹${Math.round(lowerBound).toLocaleString('en-IN')}</span>
+        <span><span data-i18n="upper"></span>: ₹${Math.round(upperBound).toLocaleString('en-IN')}</span>
+      </div>
+      <div class="range-bar">
+        <div class="range-indicator" style="left: ${((avgPrice - lowerBound) / (upperBound - lowerBound)) * 100}%"></div>
+      </div>
+    </div>
+    
+    ${forecast.length > 0 ? `
+    <div class="forecast-section">
+      <div class="forecast-header">
+        <div class="forecast-title">
+          <span data-i18n="forecast7Days"></span>
+        </div>
+        <button class="expand-btn" onclick="toggleForecast(this)">
+          <span data-i18n="viewForecast"></span>
+          <span class="arrow">▼</span>
+        </button>
+      </div>
+      <div class="forecast-grid">
+        ${forecast.map(day => `
+          <div class="forecast-day">
+            <div class="forecast-date">${formatDate(day.date)}</div>
+            <div class="forecast-price">₹${Math.round(day.predicted_price).toLocaleString('en-IN')}</div>
+            <div class="forecast-range">
+              ${Math.round(day.lower_bound)}-<br/>${Math.round(day.upper_bound)}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    ` : ''}
+  `;
+  
+  // Set explanation text
+  const explanationText = card.querySelector('.explanation-text');
+  if (currentLang === 'hi' && explanation.hindi) {
+    explanationText.textContent = explanation.hindi;
+  } else if (explanation.english) {
+    explanationText.textContent = explanation.english;
+  }
+  
+  return card;
 }
 
-/* ============================================================
-   INITIALIZE DATA
-   ============================================================ */
-async function initializeData() {
-  try {
-    const data = await fetchCropPrices();
-    renderCrops(data);
-  } catch (error) {
-    const t = langs[currentLang];
-    showError(t.error || 'Error loading data');
-    
-    // Fallback to static data if API fails
-    renderStaticData();
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  const day = date.getDate();
+  const month = date.toLocaleDateString('en', { month: 'short' });
+  return `${day} ${month}`;
+}
+
+function toggleForecast(btn) {
+  const t = langs[currentLang];
+  const card = btn.closest('.crop-card');
+  const grid = card.querySelector('.forecast-grid');
+  const isVisible = grid.classList.contains('visible');
+  
+  if (isVisible) {
+    grid.classList.remove('visible');
+    btn.classList.remove('expanded');
+    btn.querySelector('[data-i18n]').textContent = t.viewForecast;
+  } else {
+    grid.classList.add('visible');
+    btn.classList.add('expanded');
+    btn.querySelector('[data-i18n]').textContent = t.hideForecast;
   }
 }
 
-/* ============================================================
-   FALLBACK STATIC DATA
-   ============================================================ */
-function renderStaticData() {
-  const staticData = {
-    crops: [
-      { name: 'Onion', price: 2140, change: 2.3, category: 'vegetable' },
-      { name: 'Potato', price: 1680, change: -1.8, category: 'vegetable' },
-      { name: 'Wheat', price: 2520, change: 0.9, category: 'grain' }
-    ]
-  };
-  
-  renderCrops(staticData);
+function showError(message) {
+  const t = langs[currentLang];
+  document.getElementById('mainContent').innerHTML = `
+    <div class="error-message">
+      <strong>${t.error}</strong><br/>
+      ${message}<br/><br/>
+      ${t.checkConnection}
+    </div>
+  `;
 }
 
 /* ============================================================
-   APPLY LANGUAGE
+   LANGUAGE FUNCTIONS
    ============================================================ */
 function applyLang(code) {
   const t = langs[code];
   if (!t) return;
   currentLang = code;
 
-  // Update body classes (preserve dark if active)
   const isDark = document.body.classList.contains('dark');
   document.body.className = (isDark ? 'dark ' : '') + 'lang-' + code;
   document.documentElement.setAttribute('lang', code);
 
-  // Header pill
   document.getElementById('langCode').textContent = t.code;
 
-  // Simple text bindings
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.dataset.i18n;
     if (t[key] !== undefined) el.textContent = t[key];
   });
 
-  // HTML bindings (hero title with <em>)
   document.querySelectorAll('[data-i18n-html]').forEach(el => {
     const key = el.dataset.i18nHtml;
     if (t[key] !== undefined) el.innerHTML = t[key];
   });
 
-  // Update active state in drawer
   document.querySelectorAll('.lang-option').forEach(el => {
     el.classList.toggle('active', el.dataset.lang === code);
   });
+  
+  // Update explanations
+  document.querySelectorAll('.crop-card').forEach(card => {
+    const cropName = card.dataset.crop;
+    const cropData = cropsData.find(c => c.crop === cropName);
+    if (cropData && cropData.explanation) {
+      const explanationText = card.querySelector('.explanation-text');
+      if (code === 'hi' && cropData.explanation.hindi) {
+        explanationText.textContent = cropData.explanation.hindi;
+      } else if (cropData.explanation.english) {
+        explanationText.textContent = cropData.explanation.english;
+      }
+    }
+  });
 }
 
-/* ============================================================
-   BUILD LANGUAGE PICKER LIST
-   ============================================================ */
 function buildLangList() {
   const list = document.getElementById('langList');
   list.innerHTML = '';
@@ -841,62 +1090,72 @@ function buildLangList() {
     const el = document.createElement('div');
     el.className = 'lang-option' + (code === currentLang ? ' active' : '');
     el.dataset.lang = code;
-    el.innerHTML =
-      '<span class="lang-flag">🇮🇳</span>' +
-      '<div class="lang-text">' +
-        '<span class="lang-native">' + t.code + '</span>' +
-        '<span class="lang-english">' + t.english + '</span>' +
-      '</div>' +
-      '<div class="lang-check">✓</div>';
+    el.innerHTML = `
+      <span class="lang-flag">🇮🇳</span>
+      <div class="lang-text">
+        <span class="lang-native">${t.code}</span>
+        <span class="lang-english">${t.english}</span>
+      </div>
+      <div class="lang-check">✓</div>
+    `;
     el.addEventListener('click', () => { applyLang(code); closeDrawer(); });
     list.appendChild(el);
   });
 }
 
-/* ============================================================
-   DRAWER
-   ============================================================ */
 function toggleDrawer() {
-  document.getElementById('langDrawer').classList.contains('visible') ? closeDrawer() : openDrawer();
+  const drawer = document.getElementById('langDrawer');
+  drawer.classList.contains('visible') ? closeDrawer() : openDrawer();
 }
+
 function openDrawer() {
   buildLangList();
   document.getElementById('langOverlay').classList.add('visible');
   document.getElementById('langDrawer').classList.add('visible');
   document.getElementById('langBtn').classList.add('open');
 }
+
 function closeDrawer() {
   document.getElementById('langOverlay').classList.remove('visible');
   document.getElementById('langDrawer').classList.remove('visible');
   document.getElementById('langBtn').classList.remove('open');
 }
 
-/* ============================================================
-   THEME TOGGLE
-   ============================================================ */
 function toggleTheme() {
   document.body.classList.toggle('dark');
+  localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
 }
 
 /* ============================================================
-   KEYBOARD
+   INITIALIZATION
    ============================================================ */
-document.getElementById('langBtn').addEventListener('keydown', e => {
-  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDrawer(); }
-});
-document.querySelector('.toggle-wrap').addEventListener('keydown', e => {
-  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleTheme(); }
-});
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+async function init() {
+  // Load saved theme
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
+    document.body.classList.add('dark');
+  }
+  
+  applyLang('hi');
+  
+  try {
+    const data = await fetchCropData();
+    renderCrops(data);
+  } catch (error) {
+    showError(error.message);
+  }
+}
 
-/* ============================================================
-   INIT
-   ============================================================ */
-applyLang('hi');
-initializeData();
+// Event listeners
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeDrawer();
+});
 
-// Auto-refresh every 5 minutes
-setInterval(initializeData, 5 * 60 * 1000);
+// Initialize app
+init();
+
+// Auto-refresh every 10 minutes
+setInterval(init, 10 * 60 * 1000);
 </script>
 </body>
 </html>
