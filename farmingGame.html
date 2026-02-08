@@ -3,1101 +3,1771 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Groundskeeper - Regenerative Farm Game</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;700&family=Righteous&family=Urbanist:wght@300;500;700&display=swap" rel="stylesheet">
+    <title>Market-to-Fork - Supply Chain Management</title>
     <style>
-        :root {
-            --earth-dark: #2d1b0e;
-            --earth-rich: #4a2c1a;
-            --soil-healthy: #6b4423;
-            --leaf-green: #4a7c59;
-            --wheat-gold: #d4a745;
-            --sky-blue: #87ceeb;
-            --water-blue: #4a90a4;
-            --danger-red: #c44536;
-            --dust-gray: #9b8b7e;
-            --carbon-black: #1a1a1a;
-            --life-green: #7fbc8c;
-        }
-
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght:400;700;900&family=Rajdhani:wght:300;400;600&display=swap');
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
         }
-
+        
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #121829;
+            --bg-card: #1a2235;
+            --accent-cyan: #00f0ff;
+            --accent-green: #00ff88;
+            --accent-orange: #ff6b35;
+            --accent-red: #ff3366;
+            --text-primary: #e8f0f7;
+            --text-secondary: #8b9dc3;
+            --border-color: #2a3f5f;
+        }
+        
         body {
-            font-family: 'Urbanist', sans-serif;
-            background: linear-gradient(135deg, var(--earth-dark) 0%, var(--soil-healthy) 100%);
-            color: #f4f1e8;
-            overflow: hidden;
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+        
+        /* Animated background grid */
+        body::before {
+            content: '';
             position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            touch-action: none;
+            background: 
+                linear-gradient(90deg, transparent 49px, rgba(0, 240, 255, 0.05) 50px),
+                linear-gradient(0deg, transparent 49px, rgba(0, 240, 255, 0.05) 50px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+            animation: gridMove 20s linear infinite;
         }
-
-        #game-container {
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
+        
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        .container {
             position: relative;
+            z-index: 1;
+            max-width: 100%;
+            min-height: 100vh;
         }
-
+        
         /* Header */
-        #game-header {
-            background: rgba(29, 27, 23, 0.95);
-            padding: 12px 20px;
-            border-bottom: 3px solid var(--wheat-gold);
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(0, 240, 255, 0.1) 100%);
+            border-bottom: 2px solid var(--accent-cyan);
+            padding: 1rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            z-index: 100;
+            flex-wrap: wrap;
+            gap: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 240, 255, 0.3);
         }
-
-        #game-title {
-            font-family: 'Righteous', cursive;
-            font-size: clamp(18px, 4vw, 28px);
-            color: var(--wheat-gold);
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            letter-spacing: 1px;
+        
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--accent-cyan), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+            letter-spacing: 2px;
         }
-
-        #resources {
+        
+        .stats {
             display: flex;
-            gap: clamp(8px, 2vw, 20px);
-            font-size: clamp(11px, 2.5vw, 14px);
-            font-weight: 700;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
-
-        .resource {
+        
+        .stat-item {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid var(--accent-cyan);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 5px;
-            background: rgba(74, 44, 26, 0.6);
-            padding: 6px 12px;
-            border-radius: 20px;
-            border: 2px solid var(--wheat-gold);
+            gap: 0.5rem;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
             transition: all 0.3s ease;
         }
-
-        .resource:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(212, 167, 69, 0.5);
+        
+        .stat-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
         }
-
-        .resource-icon {
-            font-size: 16px;
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85em;
         }
-
-        /* Main Game Area */
-        #game-main {
-            flex: 1;
-            display: flex;
-            overflow: hidden;
-            position: relative;
+        
+        .stat-value {
+            color: var(--accent-green);
+            font-weight: 700;
         }
-
-        /* Farm Grid */
-        #farm-container {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
-
-        #farm-grid {
+        
+        /* Main game area */
+        .game-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 15px;
-            max-width: 1200px;
-            margin: 0 auto;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            padding: 1rem;
         }
-
-        .plot {
-            aspect-ratio: 1;
-            background: linear-gradient(135deg, var(--dust-gray) 0%, #7a6b5d 100%);
-            border: 3px solid var(--earth-rich);
+        
+        @media (min-width: 1024px) {
+            .game-grid {
+                grid-template-columns: 350px 1fr 350px;
+            }
+        }
+        
+        /* Cards */
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
-            cursor: pointer;
+            padding: 1rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             position: relative;
             overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
         }
-
-        .plot:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), inset 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        .plot:active {
-            transform: translateY(-2px) scale(1.01);
-        }
-
-        .plot.healthy {
-            background: linear-gradient(135deg, var(--leaf-green) 0%, #3d6647 100%);
-            border-color: var(--life-green);
-            animation: pulse-healthy 3s ease-in-out infinite;
-        }
-
-        .plot.ready-to-harvest {
-            background: linear-gradient(135deg, var(--wheat-gold) 0%, #c49635 100%);
-            border-color: var(--wheat-gold);
-            animation: pulse-harvest 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse-healthy {
-            0%, 100% { box-shadow: 0 0 15px rgba(127, 188, 140, 0.4); }
-            50% { box-shadow: 0 0 25px rgba(127, 188, 140, 0.7); }
-        }
-
-        @keyframes pulse-harvest {
-            0%, 100% { box-shadow: 0 0 20px rgba(212, 167, 69, 0.6); }
-            50% { box-shadow: 0 0 35px rgba(212, 167, 69, 0.9); }
-        }
-
-        .plot-content {
+        
+        .panel::before {
+            content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 8px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-cyan), transparent);
         }
-
-        .plot-icon {
-            font-size: clamp(24px, 5vw, 40px);
-            margin-bottom: 5px;
-            animation: sway 3s ease-in-out infinite;
-        }
-
-        @keyframes sway {
-            0%, 100% { transform: rotate(-2deg); }
-            50% { transform: rotate(2deg); }
-        }
-
-        .plot-stats {
-            font-size: clamp(9px, 2vw, 11px);
-            text-align: center;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 4px 8px;
-            border-radius: 8px;
+        
+        .panel-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
             font-weight: 700;
-        }
-
-        /* Sidebar */
-        #sidebar {
-            width: clamp(250px, 30vw, 350px);
-            background: rgba(45, 27, 14, 0.95);
-            border-left: 3px solid var(--wheat-gold);
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .sidebar-section {
-            background: rgba(74, 44, 26, 0.5);
-            border-radius: 12px;
-            padding: 15px;
-            border: 2px solid var(--soil-healthy);
-        }
-
-        .sidebar-title {
-            font-family: 'Bitter', serif;
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--wheat-gold);
-            margin-bottom: 12px;
+            margin-bottom: 1rem;
+            color: var(--accent-cyan);
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-
-        .stat-bar {
-            margin-bottom: 12px;
+        
+        /* Contracts */
+        .contract-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
         }
-
-        .stat-label {
+        
+        .contract-card {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.05), rgba(0, 255, 136, 0.05));
+            border: 1px solid var(--accent-cyan);
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .contract-card:hover {
+            transform: translateX(5px);
+            border-color: var(--accent-green);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+        
+        .contract-card.selected {
+            border-color: var(--accent-cyan);
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 255, 136, 0.05));
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+        
+        .contract-card.accepted {
+            border-color: var(--accent-green);
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(0, 240, 255, 0.1));
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+        
+        .contract-card.dispatched {
+            opacity: 0.4;
+            pointer-events: none;
+            border-color: var(--text-secondary);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+        }
+        
+        .contract-badge {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: var(--accent-green);
+            color: var(--bg-primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+        }
+        
+        .contract-badge.dispatched {
+            background: var(--text-secondary);
+        }
+        
+        .contract-header {
             display: flex;
             justify-content: space-between;
-            font-size: 12px;
-            margin-bottom: 5px;
-            font-weight: 500;
+            align-items: center;
+            margin-bottom: 0.5rem;
         }
-
-        .stat-progress {
-            width: 100%;
-            height: 12px;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 6px;
-            overflow: hidden;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .stat-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--life-green) 0%, var(--wheat-gold) 100%);
-            transition: width 0.5s ease;
-            border-radius: 6px;
-        }
-
-        .action-button {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            background: linear-gradient(135deg, var(--leaf-green) 0%, #3d6647 100%);
-            border: 2px solid var(--life-green);
-            color: #fff;
+        
+        .crop-name {
             font-weight: 700;
-            font-size: 14px;
+            font-size: 1.1rem;
+            color: var(--accent-green);
+        }
+        
+        .reward {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            color: var(--accent-cyan);
+        }
+        
+        .contract-details {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .freshness-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .freshness-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-green), var(--accent-orange));
+            transition: width 1s linear;
+        }
+        
+        /* Map */
+        .map-container {
+            position: relative;
+            background: radial-gradient(circle at 30% 30%, rgba(0, 240, 255, 0.05), var(--bg-secondary));
+            border-radius: 12px;
+            overflow: hidden;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .map-svg {
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+        }
+        
+        .route-line {
+            stroke: var(--accent-cyan);
+            stroke-width: 2;
+            fill: none;
+            stroke-dasharray: 5, 5;
+            animation: dashMove 1s linear infinite;
+        }
+        
+        @keyframes dashMove {
+            to { stroke-dashoffset: -10; }
+        }
+        
+        .location-marker {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .location-marker:hover {
+            filter: drop-shadow(0 0 10px var(--accent-cyan));
+        }
+        
+        .vehicle {
+            animation: vehicleMove 3s ease-in-out;
+        }
+        
+        @keyframes vehicleMove {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(10px, -10px); }
+        }
+        
+        /* Fleet panel */
+        .fleet-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .fleet-item {
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
+            padding: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .fleet-item.active {
+            border-color: var(--accent-green);
+            background: rgba(0, 255, 136, 0.1);
+        }
+        
+        .fleet-item.busy {
+            opacity: 0.5;
+        }
+        
+        .fleet-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .fleet-status {
+            font-size: 0.85rem;
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+        
+        .fleet-status.busy {
+            color: var(--accent-orange);
+        }
+        
+        /* Action buttons */
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.3s ease;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
         }
-
-        .action-button:hover:not(:disabled) {
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green));
+            color: var(--bg-primary);
+            box-shadow: 0 4px 15px rgba(0, 240, 255, 0.4);
+        }
+        
+        .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(74, 124, 89, 0.4);
+            box-shadow: 0 6px 25px rgba(0, 240, 255, 0.6);
         }
-
-        .action-button:active:not(:disabled) {
-            transform: translateY(0);
+        
+        .btn-secondary {
+            background: rgba(255, 107, 53, 0.2);
+            color: var(--accent-orange);
+            border: 1px solid var(--accent-orange);
         }
-
-        .action-button:disabled {
-            opacity: 0.5;
+        
+        .btn-secondary:hover {
+            background: var(--accent-orange);
+            color: var(--bg-primary);
+        }
+        
+        .btn:disabled {
+            opacity: 0.3;
             cursor: not-allowed;
-            filter: grayscale(50%);
         }
-
-        .action-button .cost {
-            font-size: 11px;
-            opacity: 0.9;
+        
+        .btn:not(:disabled).pulse {
+            animation: buttonPulse 2s ease-in-out infinite;
         }
-
-        /* Tutorial */
-        #tutorial {
+        
+        @keyframes buttonPulse {
+            0%, 100% {
+                box-shadow: 0 4px 15px rgba(0, 240, 255, 0.4);
+            }
+            50% {
+                box-shadow: 0 4px 25px rgba(0, 240, 255, 0.8);
+            }
+        }
+        
+        /* News feed */
+        .news-feed {
+            background: rgba(255, 107, 53, 0.1);
+            border-left: 3px solid var(--accent-orange);
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            animation: newsPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes newsPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .news-title {
+            font-weight: 700;
+            color: var(--accent-orange);
+            margin-bottom: 0.25rem;
+        }
+        
+        /* Upgrades */
+        .upgrade-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        
+        .upgrade-card {
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .upgrade-card:hover {
+            border-color: var(--accent-cyan);
+            transform: scale(1.05);
+        }
+        
+        .upgrade-card.purchased {
+            border-color: var(--accent-green);
+            background: rgba(0, 255, 136, 0.1);
+        }
+        
+        .upgrade-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .upgrade-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .upgrade-cost {
+            color: var(--accent-cyan);
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-cyan);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-green);
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .header {
+                padding: 0.75rem;
+            }
+            
+            .game-grid {
+                padding: 0.5rem;
+                gap: 0.5rem;
+            }
+            
+            .panel {
+                padding: 0.75rem;
+            }
+            
+            .contract-list {
+                max-height: 300px;
+            }
+            
+            .map-svg {
+                min-height: 300px;
+            }
+        }
+        
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--accent-green);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out, slideOut 0.3s ease-in 2.7s;
+            font-weight: 600;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 240, 255, 0.3);
+            border-top-color: var(--accent-cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Manual/Guide Modal */
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--bg-card);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 16px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 0 60px rgba(0, 240, 255, 0.5);
+            animation: modalSlideIn 0.3s ease-out;
+            position: relative;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                transform: scale(0.8) translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 255, 136, 0.2));
+            border-bottom: 2px solid var(--accent-cyan);
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .modal-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--accent-cyan), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .modal-close {
+            background: rgba(255, 51, 102, 0.2);
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-
-        .tutorial-content {
-            background: linear-gradient(135deg, var(--earth-rich) 0%, var(--soil-healthy) 100%);
-            padding: 40px;
-            border-radius: 20px;
-            max-width: 600px;
-            border: 4px solid var(--wheat-gold);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            text-align: center;
-        }
-
-        .tutorial-title {
-            font-family: 'Righteous', cursive;
-            font-size: 36px;
-            color: var(--wheat-gold);
-            margin-bottom: 20px;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
-        }
-
-        .tutorial-text {
-            font-size: 16px;
-            line-height: 1.8;
-            margin-bottom: 30px;
-            color: #f4f1e8;
-        }
-
-        .start-button {
-            padding: 16px 40px;
-            background: linear-gradient(135deg, var(--wheat-gold) 0%, #b8903a 100%);
-            border: 3px solid var(--wheat-gold);
-            color: var(--earth-dark);
-            font-weight: 700;
-            font-size: 18px;
-            border-radius: 12px;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
             transition: all 0.3s ease;
-            box-shadow: 0 6px 20px rgba(212, 167, 69, 0.4);
         }
-
-        .start-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(212, 167, 69, 0.6);
+        
+        .modal-close:hover {
+            background: var(--accent-red);
+            color: var(--bg-primary);
+            transform: rotate(90deg);
         }
-
-        /* Events Panel */
-        #events-panel {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, var(--danger-red) 0%, #a33829 100%);
-            padding: 30px;
-            border-radius: 16px;
-            border: 4px solid var(--wheat-gold);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
-            z-index: 500;
-            max-width: 90%;
-            width: 500px;
-            display: none;
-            animation: slideIn 0.5s ease;
+        
+        .modal-body {
+            padding: 2rem;
         }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translate(-50%, -60%);
-            }
-            to {
-                opacity: 1;
-                transform: translate(-50%, -50%);
-            }
+        
+        .guide-section {
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
         }
-
-        .event-title {
-            font-family: 'Righteous', cursive;
-            font-size: 28px;
-            margin-bottom: 15px;
-            text-align: center;
+        
+        .guide-section:last-child {
+            border-bottom: none;
         }
-
-        .event-description {
-            font-size: 16px;
-            line-height: 1.6;
-            text-align: center;
-        }
-
-        /* Particles */
-        .particle {
-            position: fixed;
-            pointer-events: none;
-            animation: float-up 2s ease-out forwards;
-            z-index: 1000;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-        }
-
-        @keyframes float-up {
-            0% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-100px) scale(1.5);
-            }
-        }
-
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            #sidebar {
-                position: fixed;
-                right: -100%;
-                top: 0;
-                height: 100%;
-                width: 80%;
-                max-width: 300px;
-                transition: right 0.3s ease;
-                z-index: 200;
-            }
-
-            #sidebar.open {
-                right: 0;
-            }
-
-            #farm-grid {
-                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-                gap: 10px;
-            }
-        }
-
-        /* Info Section */
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            font-size: 12px;
-        }
-
-        .info-item {
+        
+        .guide-section h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
             display: flex;
-            justify-content: space-between;
-            padding: 8px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 6px;
+            align-items: center;
+            gap: 0.5rem;
         }
-
-        .info-label {
-            font-weight: 500;
-            opacity: 0.8;
+        
+        .guide-section h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            color: var(--accent-green);
+            margin: 1.5rem 0 0.75rem 0;
         }
-
-        .info-value {
+        
+        .guide-section p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+        
+        .guide-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .guide-list li {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 0.75rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .guide-list li::before {
+            content: '▸';
+            color: var(--accent-cyan);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        
+        .info-box {
+            background: rgba(0, 240, 255, 0.1);
+            border-left: 3px solid var(--accent-cyan);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+        
+        .info-box.warning {
+            background: rgba(255, 107, 53, 0.1);
+            border-left-color: var(--accent-orange);
+        }
+        
+        .info-box.success {
+            background: rgba(0, 255, 136, 0.1);
+            border-left-color: var(--accent-green);
+        }
+        
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        .stats-table th,
+        .stats-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .stats-table th {
+            background: rgba(0, 240, 255, 0.1);
+            color: var(--accent-cyan);
             font-weight: 700;
-            color: var(--wheat-gold);
+        }
+        
+        .stats-table td {
+            color: var(--text-secondary);
+        }
+        
+        .help-btn {
+            background: rgba(0, 240, 255, 0.2);
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .help-btn:hover {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 240, 255, 0.4);
+        }
+        
+        .keyboard-key {
+            display: inline-block;
+            background: rgba(0, 240, 255, 0.2);
+            border: 1px solid var(--accent-cyan);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9em;
+            margin: 0 0.2rem;
         }
     </style>
 </head>
 <body>
-    <!-- Tutorial Screen -->
-    <div id="tutorial">
-        <div class="tutorial-content">
-            <div class="tutorial-title">🌱 Groundskeeper 🌱</div>
-            <div class="tutorial-text">
-                <p style="margin-bottom: 15px;">Welcome to your regenerative farm! Build healthy soil through organic matter, microbial life, and water management.</p>
-                <p style="margin-bottom: 15px;"><strong>🌾 Your Mission:</strong> Grow crops while sequestering carbon and building biodiversity.</p>
-                <p><strong>💡 Tips:</strong> Compost enriches soil, cover crops add life, water keeps everything thriving. Healthy plots glow green!</p>
+    <div class="container">
+        <header class="header">
+            <div class="logo">MARKET-TO-FORK</div>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-label">Cash:</span>
+                    <span class="stat-value">$<span id="cash">10000</span></span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Rating:</span>
+                    <span class="stat-value"><span id="rating">3.0</span>★</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">CO₂ Credits:</span>
+                    <span class="stat-value"><span id="carbon">0</span></span>
+                </div>
+                <button class="help-btn" onclick="openManual()">📖 MANUAL</button>
             </div>
-            <button class="start-button" onclick="startGame()">Start Farming</button>
-        </div>
-    </div>
-
-    <!-- Events Panel -->
-    <div id="events-panel">
-        <div class="event-title" id="event-title"></div>
-        <div class="event-description" id="event-description"></div>
-    </div>
-
-    <!-- Main Game Container -->
-    <div id="game-container">
-        <!-- Header -->
-        <div id="game-header">
-            <div id="game-title">🌱 Groundskeeper</div>
-            <div id="resources">
-                <div class="resource">
-                    <span class="resource-icon">💰</span>
-                    <span id="money">500</span>
+        </header>
+        
+        <div class="game-grid">
+            <!-- Left panel: Contracts -->
+            <div class="panel">
+                <div class="panel-title">📋 Available Contracts</div>
+                <div class="contract-list" id="contractList"></div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="acceptBtn" disabled>Accept Contract</button>
                 </div>
-                <div class="resource">
-                    <span class="resource-icon">🌾</span>
-                    <span id="crops">0</span>
-                </div>
-                <div class="resource">
-                    <span class="resource-icon">🌍</span>
-                    <span id="carbon">0</span>
+                
+                <div id="workflowStatus" style="margin-top: 1rem; padding: 0.75rem; background: rgba(0, 240, 255, 0.05); border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; display: none;">
+                    <div style="color: var(--accent-cyan); font-weight: 600; margin-bottom: 0.5rem;">📋 Workflow Status</div>
+                    <div id="statusText" style="color: var(--text-secondary);"></div>
                 </div>
             </div>
-        </div>
-
-        <!-- Main Game Area -->
-        <div id="game-main">
-            <!-- Farm Container -->
-            <div id="farm-container">
-                <div id="farm-grid"></div>
+            
+            <!-- Center panel: Map -->
+            <div class="panel">
+                <div class="panel-title">🗺️ Regional Map</div>
+                <div class="map-container">
+                    <svg class="map-svg" id="mapSvg" viewBox="0 0 600 400">
+                        <!-- Background -->
+                        <defs>
+                            <radialGradient id="mapGrad">
+                                <stop offset="0%" style="stop-color:rgba(0,240,255,0.1);stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:rgba(18,24,41,1);stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <rect width="600" height="400" fill="url(#mapGrad)"/>
+                        
+                        <!-- Routes will be drawn here -->
+                        <g id="routes"></g>
+                        
+                        <!-- Locations -->
+                        <g id="locations">
+                            <!-- Farms -->
+                            <g class="location-marker" data-type="farm" data-x="100" data-y="100">
+                                <circle cx="100" cy="100" r="15" fill="#00ff88" opacity="0.2"/>
+                                <circle cx="100" cy="100" r="8" fill="#00ff88"/>
+                                <text x="100" y="130" text-anchor="middle" fill="#00ff88" font-size="12">🌾 Farm A</text>
+                            </g>
+                            <g class="location-marker" data-type="farm" data-x="500" data-y="80">
+                                <circle cx="500" cy="80" r="15" fill="#00ff88" opacity="0.2"/>
+                                <circle cx="500" cy="80" r="8" fill="#00ff88"/>
+                                <text x="500" y="110" text-anchor="middle" fill="#00ff88" font-size="12">🥬 Farm B</text>
+                            </g>
+                            
+                            <!-- Warehouse -->
+                            <g class="location-marker" data-type="warehouse" data-x="300" data-y="200">
+                                <circle cx="300" cy="200" r="20" fill="#00f0ff" opacity="0.2"/>
+                                <circle cx="300" cy="200" r="10" fill="#00f0ff"/>
+                                <text x="300" y="235" text-anchor="middle" fill="#00f0ff" font-size="14" font-weight="bold">🏭 HQ</text>
+                            </g>
+                            
+                            <!-- Retailers -->
+                            <g class="location-marker" data-type="retailer" data-x="150" data-y="320">
+                                <circle cx="150" cy="320" r="15" fill="#ff6b35" opacity="0.2"/>
+                                <circle cx="150" cy="320" r="8" fill="#ff6b35"/>
+                                <text x="150" y="350" text-anchor="middle" fill="#ff6b35" font-size="12">🏪 Store 1</text>
+                            </g>
+                            <g class="location-marker" data-type="retailer" data-x="450" data-y="300">
+                                <circle cx="450" cy="300" r="15" fill="#ff6b35" opacity="0.2"/>
+                                <circle cx="450" cy="300" r="8" fill="#ff6b35"/>
+                                <text x="450" y="330" text-anchor="middle" fill="#ff6b35" font-size="12">🍽️ Restaurant</text>
+                            </g>
+                        </g>
+                        
+                        <!-- Vehicles will be drawn here -->
+                        <g id="vehicles"></g>
+                    </svg>
+                </div>
+                
+                <div id="newsContainer"></div>
             </div>
-
-            <!-- Sidebar -->
-            <div id="sidebar">
-                <!-- Farm Health -->
-                <div class="sidebar-section">
-                    <div class="sidebar-title">🌿 Farm Health</div>
-                    <div class="stat-bar">
-                        <div class="stat-label">
-                            <span>Organic Matter</span>
-                            <span id="organic-val">50%</span>
-                        </div>
-                        <div class="stat-progress">
-                            <div class="stat-fill" id="organic-bar" style="width: 50%;"></div>
-                        </div>
-                    </div>
-                    <div class="stat-bar">
-                        <div class="stat-label">
-                            <span>Soil Microbes</span>
-                            <span id="microbes-val">50%</span>
-                        </div>
-                        <div class="stat-progress">
-                            <div class="stat-fill" id="microbes-bar" style="width: 50%;"></div>
-                        </div>
-                    </div>
-                    <div class="stat-bar">
-                        <div class="stat-label">
-                            <span>Soil Moisture</span>
-                            <span id="moisture-val">50%</span>
-                        </div>
-                        <div class="stat-progress">
-                            <div class="stat-fill" id="moisture-bar" style="width: 50%;"></div>
-                        </div>
-                    </div>
-                    <div class="stat-bar">
-                        <div class="stat-label">
-                            <span>Carbon Sequestered</span>
-                            <span id="carbon-val">0</span>
-                        </div>
-                        <div class="stat-progress">
-                            <div class="stat-fill" id="carbon-bar" style="width: 0%;"></div>
-                        </div>
-                    </div>
+            
+            <!-- Right panel: Fleet & Upgrades -->
+            <div class="panel">
+                <div class="panel-title">🚛 Fleet Management</div>
+                <div style="margin-bottom: 1rem; padding: 0.5rem; background: rgba(0, 240, 255, 0.05); border-radius: 4px; font-size: 0.9rem;">
+                    <span style="color: var(--text-secondary);">Active Deliveries: </span>
+                    <span style="color: var(--accent-green); font-weight: 700;" id="activeDeliveryCount">0</span>
+                    <span style="color: var(--text-secondary);"> / 3</span>
                 </div>
-
-                <!-- Actions -->
-                <div class="sidebar-section">
-                    <div class="sidebar-title">⚡ Actions</div>
-                    <button class="action-button" onclick="applyCompost()">
-                        🍂 Add Compost<br>
-                        <span class="cost">Cost: $50</span>
-                    </button>
-                    <button class="action-button" onclick="plantCoverCrop()">
-                        🌱 Cover Crop<br>
-                        <span class="cost">Cost: $30</span>
-                    </button>
-                    <button class="action-button" onclick="irrigate()">
-                        💧 Irrigate All<br>
-                        <span class="cost">Cost: $40</span>
-                    </button>
+                <div class="fleet-list" id="fleetList"></div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="dispatchBtn" disabled>Dispatch</button>
+                    <button class="btn btn-secondary" id="processBtn" disabled>Process</button>
                 </div>
-
-                <!-- Farm Info -->
-                <div class="sidebar-section">
-                    <div class="sidebar-title">📊 Farm Stats</div>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Season:</span>
-                            <span class="info-value" id="season">Spring</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Healthy Plots:</span>
-                            <span class="info-value" id="healthy-plots">0</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Biodiversity:</span>
-                            <span class="info-value" id="biodiversity">Low</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Total Plots:</span>
-                            <span class="info-value">12</span>
-                        </div>
-                    </div>
-                </div>
+                
+                <div class="panel-title" style="margin-top: 2rem;">⚡ Upgrades</div>
+                <div class="upgrade-grid" id="upgradeGrid"></div>
             </div>
         </div>
+        
+        <!-- Manual/Guide Modal -->
+        <div class="modal-overlay" id="manualModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">📖 PLAYER'S MANUAL</div>
+                    <button class="modal-close" onclick="closeManual()">×</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Quick Start -->
+                    <div class="guide-section">
+                        <h2>🚀 Quick Start Guide</h2>
+                        <p>Welcome to Market-to-Fork! You're the CEO of a cutting-edge supply chain operation in 2026. Your mission: bridge the gap between farms and consumers while maintaining efficiency, quality, and sustainability.</p>
+                        
+                        <div class="info-box success">
+                            <strong>🎯 Your Goal:</strong> Build a profitable logistics empire by accepting contracts, optimizing delivery routes, and upgrading your infrastructure. Balance the <strong>Golden Triangle</strong> of Efficiency, Quality, and Sustainability to succeed!
+                        </div>
+                        
+                        <h3>Basic Workflow</h3>
+                        <ul class="guide-list">
+                            <li><strong>Step 1:</strong> Select a contract from the left panel (look for high rewards and manageable distances)</li>
+                            <li><strong>Step 2:</strong> Choose an available vehicle from your fleet (match vehicle to cargo needs)</li>
+                            <li><strong>Step 3:</strong> Optional - Click "Process" to convert raw goods for higher profits</li>
+                            <li><strong>Step 4:</strong> Click "Dispatch" to send your vehicle on delivery</li>
+                            <li><strong>Step 5:</strong> Watch the delivery progress on the map and collect your reward!</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Core Mechanics -->
+                    <div class="guide-section">
+                        <h2>⚙️ Core Mechanics</h2>
+                        
+                        <h3>🍓 Freshness & Perishability</h3>
+                        <p>Every crop has a <strong>Freshness Value</strong> that decays over time using the formula: F(t) = 100 × e<sup>-kt</sup></p>
+                        <ul class="guide-list">
+                            <li><strong>Strawberries</strong> decay fastest - deliver quickly!</li>
+                            <li><strong>Potatoes</strong> and <strong>Wheat</strong> last longer</li>
+                            <li>Watch the green freshness bar below each contract</li>
+                            <li>Higher freshness = higher reward when delivered</li>
+                        </ul>
+                        
+                        <div class="info-box warning">
+                            <strong>⚠️ Warning:</strong> If freshness drops below 50%, your rating will decrease! Late or spoiled deliveries hurt your reputation and limit access to premium contracts.
+                        </div>
+                        
+                        <h3>⭐ Rating System (The "Fork" Rating)</h3>
+                        <p>Your reputation score ranges from 1-5 stars:</p>
+                        <ul class="guide-list">
+                            <li><strong>High freshness (>80%)</strong> → Rating increases</li>
+                            <li><strong>Low freshness (<50%)</strong> → Rating decreases significantly</li>
+                            <li>Higher ratings unlock better contracts with premium buyers</li>
+                            <li>Maintain 4+ stars to access high-end restaurants and retailers</li>
+                        </ul>
+                        
+                        <h3>⚙️ Processing for Profit</h3>
+                        <p>Some raw goods can be processed into higher-value products:</p>
+                        <table class="stats-table">
+                            <thead>
+                                <tr>
+                                    <th>Raw Material</th>
+                                    <th>Processed Product</th>
+                                    <th>Value Multiplier</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>🥛 Milk</td>
+                                    <td>🧀 Cheese</td>
+                                    <td>1.5x base value</td>
+                                </tr>
+                                <tr>
+                                    <td>🌾 Wheat</td>
+                                    <td>🍞 Flour</td>
+                                    <td>1.5x base value</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Tip:</strong> Processing takes time but significantly increases margins. With the Solar Processing Hub upgrade, this multiplier increases to 2.25x!</p>
+                    </div>
+                    
+                    <!-- Fleet Management -->
+                    <div class="guide-section">
+                        <h2>🚛 Fleet Management</h2>
+                        <p>Each vehicle has unique strengths and weaknesses:</p>
+                        
+                        <table class="stats-table">
+                            <thead>
+                                <tr>
+                                    <th>Vehicle</th>
+                                    <th>Speed</th>
+                                    <th>Capacity</th>
+                                    <th>Decay Rate</th>
+                                    <th>Best For</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>🚛 Cryo-EV Truck</td>
+                                    <td>0.7x (Slow)</td>
+                                    <td>100kg</td>
+                                    <td>0.3x (Excellent)</td>
+                                    <td>Long distances, perishables, carbon credits</td>
+                                </tr>
+                                <tr>
+                                    <td>🚐 Refrigerated Van</td>
+                                    <td>1.0x (Normal)</td>
+                                    <td>50kg</td>
+                                    <td>0.5x (Good)</td>
+                                    <td>Balanced medium-range deliveries</td>
+                                </tr>
+                                <tr>
+                                    <td>🚁 Agri-Drone</td>
+                                    <td>1.5x (Fast)</td>
+                                    <td>20kg</td>
+                                    <td>0.8x (Poor)</td>
+                                    <td>Short urgent deliveries, bypassing traffic</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div class="info-box">
+                            <strong>💡 Pro Tip:</strong> Match vehicle to cargo! Use the Cryo-EV for strawberries and milk (high decay), the drone for last-minute orders, and the van for everything else.
+                        </div>
+                    </div>
+                    
+                    <!-- Dynamic Events -->
+                    <div class="guide-section">
+                        <h2>📰 Dynamic Market Events</h2>
+                        <p>Random news events trigger every 30 seconds, affecting your business:</p>
+                        
+                        <ul class="guide-list">
+                            <li><strong>⛽ Fuel Spike in Europe</strong> - Increases logistics costs by 15%</li>
+                            <li><strong>🫘 Vegan Festival in Neo-Delhi</strong> - Organic soy demand up 40%, higher prices!</li>
+                            <li><strong>🌧️ Monsoon Delay</strong> - Grain prices increase 25%</li>
+                            <li><strong>🌡️ Heat Wave Warning</strong> - All perishables decay 30% faster</li>
+                            <li><strong>🌱 Green Subsidy Program</strong> - Bonus +50 carbon credits for EV use</li>
+                        </ul>
+                        
+                        <p>Events last for 60 seconds. Adapt your strategy to capitalize on opportunities or mitigate threats!</p>
+                    </div>
+                    
+                    <!-- Upgrades -->
+                    <div class="guide-section">
+                        <h2>⚡ Upgrades & Infrastructure</h2>
+                        <p>Invest in upgrades to gain competitive advantages:</p>
+                        
+                        <h3>❄️ Cold Chain Tech ($5,000)</h3>
+                        <p>Reduces decay rate by 20% across all deliveries. Essential for perishables and long-distance routes.</p>
+                        
+                        <h3>☀️ Solar Processing Hub ($8,000)</h3>
+                        <p>Increases processing value multiplier by 1.5x. Turn milk into cheese for 2.25x the original value!</p>
+                        
+                        <h3>🔗 Blockchain Traceability ($12,000)</h3>
+                        <p>Adds a 30% "Transparency Bonus" to all deliveries. Premium buyers pay extra for verified supply chains.</p>
+                        
+                        <h3>📦 Micro-Fulfillment Center ($6,000)</h3>
+                        <p>Increases fleet speed by 20%. Faster deliveries mean fresher goods and better ratings.</p>
+                        
+                        <div class="info-box success">
+                            <strong>🎯 Upgrade Strategy:</strong> Start with Cold Chain Tech to reduce losses, then Blockchain for premium bonuses. Save Solar Hub for mid-game when you're processing regularly.
+                        </div>
+                    </div>
+                    
+                    <!-- Carbon Credits -->
+                    <div class="guide-section">
+                        <h2>🌱 Carbon Credits & Sustainability</h2>
+                        <p>In 2026, you're taxed on emissions. Using eco-friendly options earns tradeable credits:</p>
+                        
+                        <ul class="guide-list">
+                            <li><strong>EV vehicles</strong> earn 1 credit per 10km traveled</li>
+                            <li><strong>Optimized routes</strong> (10% shorter) earn bonus credits</li>
+                            <li>Credits can be traded for cash or used to offset expansion costs</li>
+                            <li>Green Subsidy events give +50 bonus credits</li>
+                        </ul>
+                        
+                        <div class="info-box">
+                            <strong>💡 Green is Good:</strong> Despite slower speed, the Cryo-EV Truck generates passive income through carbon credits while preserving freshness. Win-win!
+                        </div>
+                    </div>
+                    
+                    <!-- Advanced Strategies -->
+                    <div class="guide-section">
+                        <h2>🎓 Advanced Strategies</h2>
+                        
+                        <h3>The Golden Triangle</h3>
+                        <p>Success requires balancing three pillars:</p>
+                        <ul class="guide-list">
+                            <li><strong>Efficiency:</strong> Fast deliveries, optimized routes, high vehicle utilization</li>
+                            <li><strong>Quality:</strong> Maintaining freshness above 80%, high ratings, premium buyers</li>
+                            <li><strong>Sustainability:</strong> EV usage, carbon credits, green upgrades</li>
+                        </ul>
+                        
+                        <h3>Contract Selection Tips</h3>
+                        <ul class="guide-list">
+                            <li>Higher decay crops (strawberries) should be paired with Cryo-EV or done quickly with drone</li>
+                            <li>Long-distance contracts are worth more but risk spoilage</li>
+                            <li>Process raw materials before dispatching for instant value boost</li>
+                            <li>During price spike events, prioritize affected crops (e.g., soy during vegan festival)</li>
+                        </ul>
+                        
+                        <h3>Fleet Optimization</h3>
+                        <ul class="guide-list">
+                            <li>Don't leave vehicles idle - accept multiple contracts and queue deliveries</li>
+                            <li>Short contracts with drone, medium with van, long with EV truck</li>
+                            <li>During heat waves, use ALL fast options to beat increased decay</li>
+                        </ul>
+                        
+                        <div class="info-box warning">
+                            <strong>⚠️ Common Mistakes:</strong>
+                            <ul class="guide-list">
+                                <li>Using the drone for long distances (decay ruins profit)</li>
+                                <li>Ignoring freshness timers (spoiled goods tank your rating)</li>
+                                <li>Not processing when available (leaving money on the table)</li>
+                                <li>Buying upgrades too early (need cash flow first)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Technical Info -->
+                    <div class="guide-section">
+                        <h2>🖥️ Technical Information</h2>
+                        
+                        <h3>Platform Compatibility</h3>
+                        <ul class="guide-list">
+                            <li><strong>PC/Desktop:</strong> Full 3-column layout with detailed stats</li>
+                            <li><strong>Mobile/Tablet:</strong> Optimized single-column touch interface</li>
+                            <li><strong>Browser:</strong> Works in all modern browsers (Chrome, Firefox, Safari, Edge)</li>
+                        </ul>
+                        
+                        <h3>Controls</h3>
+                        <ul class="guide-list">
+                            <li><strong>Mouse/Touch:</strong> Click/tap on contracts and vehicles to select</li>
+                            <li><strong>Buttons:</strong> Accept, Dispatch, and Process actions</li>
+                            <li><strong>Upgrades:</strong> Click/tap upgrade cards to purchase</li>
+                            <li><strong>Manual:</strong> Click 📖 MANUAL button anytime to view this guide</li>
+                        </ul>
+                        
+                        <h3>Game Saves</h3>
+                        <p>Currently, Market-to-Fork runs in your browser session. Your progress resets when you close or refresh the page. Play strategically to maximize your score in each session!</p>
+                    </div>
+                    
+                    <!-- Tips & Tricks -->
+                    <div class="guide-section">
+                        <h2>💎 Pro Tips & Tricks</h2>
+                        
+                        <ul class="guide-list">
+                            <li><strong>Watch the clock:</strong> Freshness decays in real-time. Don't let contracts sit too long!</li>
+                            <li><strong>Process strategically:</strong> Processing adds no delivery time, so it's always worth it when available</li>
+                            <li><strong>Carbon arbitrage:</strong> Long EV deliveries earn more credits than short ones - factor this into route selection</li>
+                            <li><strong>Rating protection:</strong> If freshness is dropping, dispatch immediately even with slower vehicles</li>
+                            <li><strong>Event timing:</strong> Save high-value contracts for beneficial events (price spikes, subsidies)</li>
+                            <li><strong>Upgrade order matters:</strong> Cold Chain → Blockchain → Micro Center → Solar Hub for optimal progression</li>
+                            <li><strong>Vehicle rotation:</strong> Keep all three vehicles busy to maximize throughput</li>
+                            <li><strong>Premium focus:</strong> Once you have 4+ stars, focus on high-value premium contracts</li>
+                        </ul>
+                        
+                        <div class="info-box success">
+                            <strong>🏆 Ultimate Goal:</strong> Reach 5-star rating with $50,000+ cash and all upgrades purchased. This unlocks "Supply Chain Tycoon" status!
+                        </div>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div class="guide-section">
+                        <h2>📞 Need Help?</h2>
+                        <p>Remember: The bridge between farm and table depends on YOU. Coordinate, process, deliver - before the clock runs out!</p>
+                        <p style="text-align: center; margin-top: 2rem; color: var(--accent-cyan); font-family: 'Orbitron', sans-serif;">
+                            <strong>Good luck, Supply Chain Manager! 🚛💨</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
+    
     <script>
         // Game State
         const gameState = {
-            money: 500,
-            crops: 0,
-            carbon: 0,
-            season: 0,
-            plots: [],
-            organicMatter: 50,
-            microbes: 50,
-            moisture: 50,
-            carbonScore: 0,
-            healthyPlots: 0,
-            seasonTimer: null
+            cash: 10000,
+            rating: 3.0,
+            carbonCredits: 0,
+            selectedContract: null,
+            acceptedContract: null,
+            selectedFleet: null,
+            activeDeliveries: [],
+            contracts: [],
+            fleet: [
+                { id: 'ev1', name: 'Cryo-EV Truck', type: 'ev', speed: 0.7, capacity: 100, busy: false, decay: 0.3 },
+                { id: 'van1', name: 'Refrigerated Van', type: 'van', speed: 1, capacity: 50, busy: false, decay: 0.5 },
+                { id: 'drone1', name: 'Agri-Drone', type: 'drone', speed: 1.5, capacity: 20, busy: false, decay: 0.8 }
+            ],
+            upgrades: [
+                { id: 'cold1', name: 'Cold Chain', cost: 5000, purchased: false, effect: 'decay', value: 0.2 },
+                { id: 'solar1', name: 'Solar Hub', cost: 8000, purchased: false, effect: 'processing', value: 1.5 },
+                { id: 'blockchain1', name: 'Blockchain', cost: 12000, purchased: false, effect: 'bonus', value: 0.3 },
+                { id: 'micro1', name: 'Micro Center', cost: 6000, purchased: false, effect: 'speed', value: 1.2 }
+            ],
+            news: null,
+            processingMultiplier: 1.0,
+            decayReduction: 0,
+            speedBonus: 1.0,
+            transparencyBonus: 0
         };
-
-        const seasons = ['Spring 🌸', 'Summer ☀️', 'Fall 🍂', 'Winter ❄️'];
-        const plotIcons = {
-            empty: '🟫',
-            seedling: '🌱',
-            growing: '🌿',
-            mature: '🌾',
-            coverCrop: '🍀'
-        };
-
-        const GROWTH_STAGES = {
-            SEEDLING: 1,
-            GROWING: 2,
-            MATURE: 3,
-            MAX: 3  // Cap growth at mature stage
-        };
-
-        // Initialize Game
-        function initGame() {
-            // Create 12 plots
-            for (let i = 0; i < 12; i++) {
-                gameState.plots.push({
-                    state: 'empty', // empty, planted, coverCrop
-                    organic: 50,
-                    microbes: 50,
-                    moisture: 50,
-                    growthStage: 0,
-                    icon: plotIcons.empty
+        
+        // Crop data
+        const crops = [
+            { name: 'Strawberries', icon: '🍓', basePrice: 800, decay: 0.05, distance: 'short' },
+            { name: 'Milk', icon: '🥛', basePrice: 600, decay: 0.04, distance: 'medium', processable: 'Cheese' },
+            { name: 'Wheat', icon: '🌾', basePrice: 400, decay: 0.01, distance: 'long', processable: 'Flour' },
+            { name: 'Lettuce', icon: '🥬', basePrice: 500, decay: 0.03, distance: 'short' },
+            { name: 'Potatoes', icon: '🥔', basePrice: 350, decay: 0.02, distance: 'medium' },
+            { name: 'Organic Soy', icon: '🫘', basePrice: 700, decay: 0.02, distance: 'long' }
+        ];
+        
+        // News events
+        const newsEvents = [
+            { title: 'Fuel Spike in Europe', effect: 'cost', value: 0.15, message: 'Logistics costs increased by 15%' },
+            { title: 'Vegan Festival in Neo-Delhi', effect: 'demand', crop: 'Organic Soy', value: 0.4, message: 'Soy demand up 40%!' },
+            { title: 'Monsoon Delay', effect: 'price', value: 0.25, message: 'Grain prices increased 25%' },
+            { title: 'Heat Wave Warning', effect: 'decay', value: 1.3, message: 'Perishables spoiling faster!' },
+            { title: 'Green Subsidy Program', effect: 'carbon', value: 50, message: 'Bonus carbon credits for EVs!' }
+        ];
+        
+        // Initialize game
+        function init() {
+            generateContracts();
+            renderContracts();
+            renderFleet();
+            renderUpgrades();
+            updateUI();
+            startGameLoop();
+            
+            // Random news event every 30 seconds
+            setInterval(triggerNewsEvent, 30000);
+        }
+        
+        // Generate random contracts
+        function generateContracts() {
+            gameState.contracts = [];
+            for (let i = 0; i < 5; i++) {
+                const crop = crops[Math.floor(Math.random() * crops.length)];
+                const distance = Math.floor(Math.random() * 100) + 50;
+                const deadline = Math.floor(Math.random() * 60) + 30; // 30-90 seconds
+                const reward = Math.floor(crop.basePrice * (1 + distance / 100) * (gameState.news?.effect === 'price' ? 1.25 : 1));
+                
+                gameState.contracts.push({
+                    id: 'c' + Date.now() + i,
+                    crop: crop.name,
+                    icon: crop.icon,
+                    reward: reward,
+                    distance: distance,
+                    deadline: deadline,
+                    freshness: 100,
+                    decay: crop.decay,
+                    processable: crop.processable,
+                    createdAt: Date.now(),
+                    status: 'available' // available, accepted, dispatched
                 });
             }
-
-            renderPlots();
-            updateUI();
-            startSeasonCycle();
         }
-
-        // Render Plots
-        function renderPlots() {
-            const grid = document.getElementById('farm-grid');
-            grid.innerHTML = '';
-            gameState.plots.forEach((plot, i) => {
-                const plotDiv = document.createElement('div');
-                plotDiv.className = 'plot';
-                plotDiv.id = `plot-${i}`;
-                plotDiv.onclick = () => handlePlotClick(i);
+        
+        // Render contracts
+        function renderContracts() {
+            const container = document.getElementById('contractList');
+            container.innerHTML = gameState.contracts.map(contract => {
+                let cardClass = 'contract-card';
+                let badge = '';
                 
-                const content = document.createElement('div');
-                content.className = 'plot-content';
-                
-                const icon = document.createElement('div');
-                icon.className = 'plot-icon';
-                icon.textContent = plot.icon;
-                
-                const stats = document.createElement('div');
-                stats.className = 'plot-stats';
-                stats.innerHTML = `O:${plot.organic}% M:${plot.microbes}%`;
-                
-                content.appendChild(icon);
-                content.appendChild(stats);
-                plotDiv.appendChild(content);
-                grid.appendChild(plotDiv);
-                
-                updatePlotAppearance(i);
-            });
-        }
-
-        // Update Single Plot
-        function updatePlot(plotId) {
-            const plot = gameState.plots[plotId];
-            const plotDiv = document.getElementById(`plot-${plotId}`);
-            if (!plotDiv) return;
-
-            const icon = plotDiv.querySelector('.plot-icon');
-            const stats = plotDiv.querySelector('.plot-stats');
-            
-            icon.textContent = plot.icon;
-            stats.innerHTML = `O:${plot.organic}% M:${plot.microbes}%`;
-            
-            updatePlotAppearance(plotId);
-        }
-
-        // Update Plot Visual Appearance
-        function updatePlotAppearance(plotId) {
-            const plot = gameState.plots[plotId];
-            const plotDiv = document.getElementById(`plot-${plotId}`);
-            if (!plotDiv) return;
-
-            // Remove all special classes
-            plotDiv.classList.remove('healthy', 'ready-to-harvest');
-            
-            // Check if plot is ready to harvest
-            if (plot.state === 'planted' && isReadyToHarvest(plotId)) {
-                plotDiv.classList.add('ready-to-harvest');
-            }
-            // Check if plot is healthy
-            else if (plot.organic >= 50 && plot.microbes >= 40 && plot.moisture >= 30) {
-                plotDiv.classList.add('healthy');
-            }
-        }
-
-        // Handle Plot Click
-        function handlePlotClick(plotId) {
-            const plot = gameState.plots[plotId];
-            
-            if (plot.state === 'empty') {
-                plantCrop(plotId);
-            } else if (plot.state === 'planted' && isReadyToHarvest(plotId)) {
-                harvest(plotId);
-            } else if (plot.state === 'coverCrop') {
-                showMessage('Cover crop is enriching the soil!', 'info');
-            } else if (plot.state === 'planted') {
-                const stageNames = ['', 'seedling', 'growing', 'mature'];
-                const stageName = stageNames[plot.growthStage] || 'growing';
-                showMessage(`Crop is still growing (${stageName} stage)`, 'info');
-            }
-        }
-
-        // Plant Crop
-        function plantCrop(plotId) {
-            if (gameState.money < 20) {
-                showMessage('Not enough money to plant! Need $20', 'error');
-                return;
-            }
-
-            const plot = gameState.plots[plotId];
-            gameState.money -= 20;
-            plot.state = 'planted';
-            plot.growthStage = GROWTH_STAGES.SEEDLING;
-            plot.icon = plotIcons.seedling;
-            
-            createParticle('🌱', plotId);
-            vibrate(50);
-            
-            updatePlot(plotId);
-            updateUI();
-        }
-
-        // Check if crop is ready to harvest
-        function isReadyToHarvest(plotId) {
-            const plot = gameState.plots[plotId];
-            // Fixed detection: crop must be planted, at mature stage, and have adequate organic matter
-            return plot.state === 'planted' && 
-                   plot.growthStage >= GROWTH_STAGES.MATURE && 
-                   plot.organic >= 50;
-        }
-
-        // Harvest Plot
-        function harvest(plotId) {
-            const plot = gameState.plots[plotId];
-            
-            if (!isReadyToHarvest(plotId)) {
-                showMessage('Crop is not ready to harvest yet!', 'error');
-                return;
-            }
-
-            const quality = Math.floor((plot.organic + plot.microbes + plot.moisture) / 3);
-            const earnings = Math.floor(quality * 2);
-            const carbonEarned = Math.floor(quality / 10);
-
-            gameState.money += earnings;
-            gameState.crops += 1;
-            gameState.carbon += carbonEarned;
-            gameState.carbonScore += carbonEarned;
-
-            createParticle(`+$${earnings}`, plotId);
-            vibrate(100);
-
-            // Reset plot
-            plot.state = 'empty';
-            plot.growthStage = 0;
-            plot.icon = plotIcons.empty;
-            plot.organic = Math.max(30, plot.organic - 20);
-            plot.moisture = Math.max(10, plot.moisture - 15);
-
-            updatePlot(plotId);
-            updateUI();
-        }
-
-        // Apply Compost (Global Action)
-        function applyCompost() {
-            if (gameState.money < 50) {
-                showMessage('Not enough money! Need $50', 'error');
-                return;
-            }
-
-            gameState.money -= 50;
-            gameState.organicMatter = Math.min(100, gameState.organicMatter + 15);
-            
-            gameState.plots.forEach((plot, i) => {
-                plot.organic = Math.min(100, plot.organic + 15);
-                updatePlot(i);
-            });
-
-            vibrate(100);
-            updateUI();
-            showMessage('Compost applied! Organic matter increased!', 'success');
-        }
-
-        // Plant Cover Crop (Global Action)
-        function plantCoverCrop() {
-            if (gameState.money < 30) {
-                showMessage('Not enough money! Need $30', 'error');
-                return;
-            }
-
-            const emptyPlots = gameState.plots.filter(p => p.state === 'empty');
-            if (emptyPlots.length === 0) {
-                showMessage('No empty plots available!', 'error');
-                return;
-            }
-
-            gameState.money -= 30;
-            gameState.microbes = Math.min(100, gameState.microbes + 10);
-
-            gameState.plots.forEach((plot, i) => {
-                if (plot.state === 'empty') {
-                    plot.state = 'coverCrop';
-                    plot.icon = plotIcons.coverCrop;
-                    plot.microbes = Math.min(100, plot.microbes + 20);
-                    plot.organic = Math.min(100, plot.organic + 10);
-                    updatePlot(i);
+                if (contract.status === 'dispatched') {
+                    cardClass += ' dispatched';
+                    badge = '<div class="contract-badge dispatched">IN TRANSIT</div>';
+                } else if (contract.status === 'accepted') {
+                    cardClass += ' accepted';
+                    badge = '<div class="contract-badge">ACCEPTED</div>';
+                } else if (gameState.selectedContract?.id === contract.id) {
+                    cardClass += ' selected';
                 }
-            });
-
-            vibrate(100);
-            updateUI();
-            showMessage('Cover crops planted! Soil microbes boosted!', 'success');
+                
+                return `
+                <div class="${cardClass}" 
+                     onclick="selectContract('${contract.id}')">
+                    ${badge}
+                    <div class="contract-header">
+                        <div class="crop-name">${contract.icon} ${contract.crop}</div>
+                        <div class="reward">$${contract.reward}</div>
+                    </div>
+                    <div class="contract-details">
+                        <div>📍 Distance: ${contract.distance}km</div>
+                        <div>⏱️ Deadline: ${contract.deadline}s</div>
+                        ${contract.processable && contract.status !== 'dispatched' ? `<div>⚙️ Process to ${contract.processable}</div>` : ''}
+                    </div>
+                    <div class="freshness-bar">
+                        <div class="freshness-fill" style="width: ${contract.freshness}%"></div>
+                    </div>
+                </div>
+            `;
+            }).join('');
         }
-
-        // Irrigate (Global Action)
-        function irrigate() {
-            if (gameState.money < 40) {
-                showMessage('Not enough money! Need $40', 'error');
+        
+        // Render fleet
+        function renderFleet() {
+            const container = document.getElementById('fleetList');
+            container.innerHTML = gameState.fleet.map(vehicle => `
+                <div class="fleet-item ${gameState.selectedFleet?.id === vehicle.id ? 'active' : ''} ${vehicle.busy ? 'busy' : ''}"
+                     onclick="selectFleet('${vehicle.id}')">
+                    <div>
+                        <div class="fleet-name">${vehicle.name}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                            Capacity: ${vehicle.capacity}kg | Speed: ${vehicle.speed}x
+                        </div>
+                    </div>
+                    <div class="fleet-status ${vehicle.busy ? 'busy' : ''}">
+                        ${vehicle.busy ? 'BUSY' : 'READY'}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Render upgrades
+        function renderUpgrades() {
+            const container = document.getElementById('upgradeGrid');
+            const icons = { cold1: '❄️', solar1: '☀️', blockchain1: '🔗', micro1: '📦' };
+            
+            container.innerHTML = gameState.upgrades.map(upgrade => `
+                <div class="upgrade-card ${upgrade.purchased ? 'purchased' : ''}"
+                     onclick="purchaseUpgrade('${upgrade.id}')">
+                    <div class="upgrade-icon">${icons[upgrade.id]}</div>
+                    <div class="upgrade-name">${upgrade.name}</div>
+                    <div class="upgrade-cost">${upgrade.purchased ? '✓ OWNED' : '$' + upgrade.cost}</div>
+                </div>
+            `).join('');
+        }
+        
+        // Select contract
+        function selectContract(id) {
+            const contract = gameState.contracts.find(c => c.id === id);
+            // Can only select available or accepted contracts
+            if (contract && contract.status !== 'dispatched') {
+                gameState.selectedContract = contract;
+                renderContracts();
+                updateButtons();
+            }
+        }
+        
+        // Select fleet
+        function selectFleet(id) {
+            const vehicle = gameState.fleet.find(v => v.id === id);
+            if (!vehicle.busy) {
+                gameState.selectedFleet = vehicle;
+                renderFleet();
+                updateButtons();
+            }
+        }
+        
+        // Update button states
+        function updateButtons() {
+            const hasSelected = gameState.selectedContract !== null;
+            const isAccepted = gameState.selectedContract?.status === 'accepted';
+            const hasFleet = gameState.selectedFleet !== null && !gameState.selectedFleet.busy;
+            const canProcess = gameState.selectedContract?.processable && gameState.selectedContract?.status !== 'dispatched';
+            
+            const acceptBtn = document.getElementById('acceptBtn');
+            const dispatchBtn = document.getElementById('dispatchBtn');
+            const processBtn = document.getElementById('processBtn');
+            
+            // Accept button: enabled only for available contracts
+            const canAccept = hasSelected && gameState.selectedContract?.status === 'available';
+            acceptBtn.disabled = !canAccept;
+            acceptBtn.classList.toggle('pulse', canAccept);
+            
+            // Dispatch button: enabled only for accepted contracts with selected fleet
+            const canDispatch = isAccepted && hasFleet;
+            dispatchBtn.disabled = !canDispatch;
+            dispatchBtn.classList.toggle('pulse', canDispatch);
+            
+            // Process button: enabled for contracts that can be processed
+            processBtn.disabled = !canProcess;
+            processBtn.classList.toggle('pulse', canProcess);
+            
+            // Update workflow status
+            updateWorkflowStatus();
+        }
+        
+        // Update workflow status indicator
+        function updateWorkflowStatus() {
+            const statusContainer = document.getElementById('workflowStatus');
+            const statusText = document.getElementById('statusText');
+            
+            if (!gameState.selectedContract) {
+                statusContainer.style.display = 'none';
                 return;
             }
-
-            gameState.money -= 40;
-            gameState.moisture = Math.min(100, gameState.moisture + 20);
-
-            gameState.plots.forEach((plot, i) => {
-                plot.moisture = Math.min(100, plot.moisture + 25);
-                updatePlot(i);
-            });
-
-            vibrate(100);
+            
+            statusContainer.style.display = 'block';
+            
+            if (gameState.selectedContract.status === 'available') {
+                statusText.innerHTML = `
+                    <div style="margin-bottom: 0.5rem;">✓ Contract Selected: ${gameState.selectedContract.crop}</div>
+                    <div style="color: var(--accent-cyan);">→ Next: Click "Accept Contract" button</div>
+                `;
+            } else if (gameState.selectedContract.status === 'accepted') {
+                if (!gameState.selectedFleet) {
+                    statusText.innerHTML = `
+                        <div style="margin-bottom: 0.5rem;">✓ Contract Accepted</div>
+                        <div style="color: var(--accent-cyan);">→ Next: Select a vehicle from the fleet</div>
+                    `;
+                } else {
+                    statusText.innerHTML = `
+                        <div style="margin-bottom: 0.5rem;">✓ Contract Accepted</div>
+                        <div style="margin-bottom: 0.5rem;">✓ Vehicle Selected: ${gameState.selectedFleet.name}</div>
+                        <div style="color: var(--accent-green);">→ Ready: Click "Dispatch" to begin delivery!</div>
+                    `;
+                }
+            } else if (gameState.selectedContract.status === 'dispatched') {
+                statusText.innerHTML = `
+                    <div style="color: var(--accent-orange);">🚛 In Transit...</div>
+                `;
+            }
+        }
+        
+        // Accept contract
+        document.getElementById('acceptBtn').onclick = () => {
+            if (gameState.selectedContract && gameState.selectedContract.status === 'available') {
+                gameState.selectedContract.status = 'accepted';
+                gameState.acceptedContract = gameState.selectedContract;
+                showToast(`✅ Contract accepted: ${gameState.selectedContract.crop} - Now select a vehicle to dispatch!`);
+                renderContracts();
+                updateButtons();
+            }
+        };
+        
+        // Dispatch vehicle
+        document.getElementById('dispatchBtn').onclick = () => {
+            if (gameState.selectedContract && 
+                gameState.selectedContract.status === 'accepted' && 
+                gameState.selectedFleet && 
+                !gameState.selectedFleet.busy) {
+                dispatch();
+            }
+        };
+        
+        // Process goods
+        document.getElementById('processBtn').onclick = () => {
+            if (gameState.selectedContract && 
+                gameState.selectedContract.processable && 
+                gameState.selectedContract.status !== 'dispatched') {
+                const oldReward = gameState.selectedContract.reward;
+                gameState.selectedContract.reward = Math.floor(oldReward * gameState.processingMultiplier * 1.5);
+                gameState.selectedContract.crop = gameState.selectedContract.processable;
+                gameState.selectedContract.icon = gameState.selectedContract.processable === 'Cheese' ? '🧀' : '🍞';
+                gameState.selectedContract.processable = null;
+                
+                renderContracts();
+                showToast(`⚙️ Processed! Value increased to $${gameState.selectedContract.reward}`);
+                updateButtons();
+            }
+        };
+        
+        // Dispatch delivery
+        function dispatch() {
+            const contract = gameState.selectedContract;
+            const vehicle = gameState.selectedFleet;
+            
+            // Mark contract as dispatched
+            contract.status = 'dispatched';
+            vehicle.busy = true;
+            
+            const travelTime = (contract.distance / (vehicle.speed * gameState.speedBonus)) * 1000; // Convert to ms
+            const effectiveDecay = contract.decay * (1 - vehicle.decay + gameState.decayReduction);
+            
+            // Create delivery
+            const delivery = {
+                contract: contract,
+                vehicle: vehicle,
+                startTime: Date.now(),
+                duration: travelTime,
+                decay: effectiveDecay
+            };
+            
+            gameState.activeDeliveries.push(delivery);
+            
+            // Draw route on map
+            drawRoute(vehicle.id, contract);
+            
+            // Complete delivery after travel time
+            setTimeout(() => completeDelivery(delivery), travelTime);
+            
+            showToast(`🚛 ${vehicle.name} dispatched with ${contract.crop}!`);
+            
+            // Clear selection
+            gameState.selectedContract = null;
+            gameState.acceptedContract = null;
+            gameState.selectedFleet = null;
+            
+            renderContracts();
+            renderFleet();
+            updateButtons();
             updateUI();
-            showMessage('Irrigation complete! All plots watered!', 'success');
         }
-
-        // Update Global Stats
-        function updateGlobalStats() {
-            // Average plot stats
-            const totalPlots = gameState.plots.length;
-            gameState.organicMatter = gameState.plots.reduce((sum, p) => sum + p.organic, 0) / totalPlots;
-            gameState.microbes = gameState.plots.reduce((sum, p) => sum + p.microbes, 0) / totalPlots;
-            gameState.moisture = gameState.plots.reduce((sum, p) => sum + p.moisture, 0) / totalPlots;
-
-            // Count healthy plots
-            gameState.healthyPlots = gameState.plots.filter(p => 
-                p.organic >= 50 && p.microbes >= 40 && p.moisture >= 30
-            ).length;
+        
+        // Complete delivery
+        function completeDelivery(delivery) {
+            const contract = delivery.contract;
+            const vehicle = delivery.vehicle;
+            
+            // Calculate final freshness
+            const timeElapsed = (Date.now() - delivery.startTime) / 1000;
+            const finalFreshness = contract.freshness * Math.exp(-delivery.decay * timeElapsed);
+            
+            // Calculate reward
+            let reward = Math.floor(contract.reward * (finalFreshness / 100));
+            
+            // Apply transparency bonus if blockchain purchased
+            if (gameState.upgrades.find(u => u.id === 'blockchain1').purchased) {
+                reward = Math.floor(reward * (1 + gameState.transparencyBonus + 0.3));
+            }
+            
+            // Calculate carbon credits for EVs
+            let carbonEarned = 0;
+            if (vehicle.type === 'ev') {
+                carbonEarned = Math.floor(contract.distance / 10);
+            }
+            
+            // Update game state
+            gameState.cash += reward;
+            gameState.carbonCredits += carbonEarned;
+            
+            // Update rating based on freshness
+            if (finalFreshness > 80) {
+                gameState.rating = Math.min(5, gameState.rating + 0.1);
+            } else if (finalFreshness < 50) {
+                gameState.rating = Math.max(1, gameState.rating - 0.2);
+            }
+            
+            // Free up vehicle
+            vehicle.busy = false;
+            
+            // Remove contract
+            gameState.contracts = gameState.contracts.filter(c => c.id !== contract.id);
+            
+            // Remove delivery
+            gameState.activeDeliveries = gameState.activeDeliveries.filter(d => d !== delivery);
+            
+            // Add new contract
+            if (gameState.contracts.length < 5) {
+                const crop = crops[Math.floor(Math.random() * crops.length)];
+                const distance = Math.floor(Math.random() * 100) + 50;
+                const deadline = Math.floor(Math.random() * 60) + 30;
+                const newReward = Math.floor(crop.basePrice * (1 + distance / 100));
+                
+                gameState.contracts.push({
+                    id: 'c' + Date.now(),
+                    crop: crop.name,
+                    icon: crop.icon,
+                    reward: newReward,
+                    distance: distance,
+                    deadline: deadline,
+                    freshness: 100,
+                    decay: crop.decay,
+                    processable: crop.processable,
+                    createdAt: Date.now(),
+                    status: 'available'
+                });
+            }
+            
+            showToast(`✅ Delivery complete! Earned $${reward} ${carbonEarned > 0 ? `+ ${carbonEarned} CO₂ credits` : ''}`);
+            
+            renderContracts();
+            renderFleet();
+            updateUI();
+            clearRoute(vehicle.id);
         }
-
+        
+        // Draw route on map
+        function drawRoute(vehicleId, contract) {
+            const routes = document.getElementById('routes');
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('class', 'route-line');
+            path.setAttribute('id', `route-${vehicleId}`);
+            path.setAttribute('d', 'M 100 100 L 300 200 L 450 300');
+            routes.appendChild(path);
+            
+            // Add vehicle marker
+            const vehicles = document.getElementById('vehicles');
+            const vehicleIcon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            vehicleIcon.setAttribute('id', `vehicle-${vehicleId}`);
+            vehicleIcon.setAttribute('x', '100');
+            vehicleIcon.setAttribute('y', '100');
+            vehicleIcon.setAttribute('font-size', '24');
+            vehicleIcon.setAttribute('class', 'vehicle');
+            vehicleIcon.textContent = '🚛';
+            vehicles.appendChild(vehicleIcon);
+            
+            // Animate vehicle
+            let progress = 0;
+            const animInterval = setInterval(() => {
+                progress += 0.01;
+                if (progress >= 1) {
+                    clearInterval(animInterval);
+                    return;
+                }
+                const x = 100 + (350 * progress);
+                const y = 100 + (200 * progress);
+                vehicleIcon.setAttribute('x', x);
+                vehicleIcon.setAttribute('y', y);
+            }, 50);
+        }
+        
+        // Clear route
+        function clearRoute(vehicleId) {
+            const route = document.getElementById(`route-${vehicleId}`);
+            const vehicle = document.getElementById(`vehicle-${vehicleId}`);
+            if (route) route.remove();
+            if (vehicle) vehicle.remove();
+        }
+        
+        // Purchase upgrade
+        function purchaseUpgrade(id) {
+            const upgrade = gameState.upgrades.find(u => u.id === id);
+            if (!upgrade.purchased && gameState.cash >= upgrade.cost) {
+                gameState.cash -= upgrade.cost;
+                upgrade.purchased = true;
+                
+                // Apply upgrade effect
+                switch (upgrade.effect) {
+                    case 'decay':
+                        gameState.decayReduction += upgrade.value;
+                        break;
+                    case 'processing':
+                        gameState.processingMultiplier *= upgrade.value;
+                        break;
+                    case 'bonus':
+                        gameState.transparencyBonus += upgrade.value;
+                        break;
+                    case 'speed':
+                        gameState.speedBonus *= upgrade.value;
+                        break;
+                }
+                
+                showToast(`⚡ Upgrade purchased: ${upgrade.name}!`);
+                renderUpgrades();
+                updateUI();
+            } else if (upgrade.purchased) {
+                showToast('Already owned!');
+            } else {
+                showToast('Not enough cash!');
+            }
+        }
+        
+        // Trigger random news event
+        function triggerNewsEvent() {
+            const event = newsEvents[Math.floor(Math.random() * newsEvents.length)];
+            gameState.news = event;
+            
+            const newsContainer = document.getElementById('newsContainer');
+            newsContainer.innerHTML = `
+                <div class="news-feed">
+                    <div class="news-title">📰 ${event.title}</div>
+                    <div>${event.message}</div>
+                </div>
+            `;
+            
+            showToast(`📰 Breaking: ${event.title}`);
+            
+            // Clear news after 1 minute
+            setTimeout(() => {
+                gameState.news = null;
+                newsContainer.innerHTML = '';
+            }, 60000);
+        }
+        
+        // Game loop - update freshness
+        function startGameLoop() {
+            setInterval(() => {
+                gameState.contracts.forEach(contract => {
+                    // Only update freshness for non-dispatched contracts
+                    if (contract.status !== 'dispatched') {
+                        const age = (Date.now() - contract.createdAt) / 1000;
+                        contract.freshness = Math.max(0, 100 * Math.exp(-contract.decay * age));
+                    }
+                });
+                renderContracts();
+            }, 1000);
+        }
+        
         // Update UI
         function updateUI() {
-            updateGlobalStats();
-
-            document.getElementById('money').textContent = `$${gameState.money}`;
-            document.getElementById('crops').textContent = gameState.crops;
-            document.getElementById('carbon').textContent = gameState.carbon;
-
-            // Cap global stats
-            gameState.organicMatter = Math.min(gameState.organicMatter, 100);
-            gameState.microbes = Math.min(gameState.microbes, 100);
-            gameState.moisture = Math.min(gameState.moisture, 100);
-            gameState.carbonScore = Math.min(gameState.carbonScore, 100);
-
-            document.getElementById('organic-val').textContent = `${Math.floor(gameState.organicMatter)}%`;
-            document.getElementById('organic-bar').style.width = `${gameState.organicMatter}%`;
-
-            document.getElementById('microbes-val').textContent = `${Math.floor(gameState.microbes)}%`;
-            document.getElementById('microbes-bar').style.width = `${gameState.microbes}%`;
-
-            document.getElementById('moisture-val').textContent = `${Math.floor(gameState.moisture)}%`;
-            document.getElementById('moisture-bar').style.width = `${gameState.moisture}%`;
-
-            document.getElementById('carbon-val').textContent = Math.floor(gameState.carbonScore);
-            document.getElementById('carbon-bar').style.width = `${gameState.carbonScore}%`;
-
-            document.getElementById('healthy-plots').textContent = gameState.healthyPlots;
-
-            // Biodiversity
-            const avgHealth = (gameState.organicMatter + gameState.microbes + gameState.moisture) / 3;
-            let biodiversity = 'Low';
-            if (avgHealth >= 70) biodiversity = 'High';
-            else if (avgHealth >= 40) biodiversity = 'Medium';
-            document.getElementById('biodiversity').textContent = biodiversity;
+            document.getElementById('cash').textContent = gameState.cash;
+            document.getElementById('rating').textContent = gameState.rating.toFixed(1);
+            document.getElementById('carbon').textContent = gameState.carbonCredits;
+            document.getElementById('activeDeliveryCount').textContent = gameState.activeDeliveries.length;
         }
-
-        // Season Cycle
-        function startSeasonCycle() {
-            gameState.seasonTimer = setInterval(() => {
-                advanceSeason();
-            }, 30000); // 30 seconds per season
-        }
-
-        function advanceSeason() {
-            gameState.season = (gameState.season + 1) % 4;
-            document.getElementById('season').textContent = seasons[gameState.season];
-
-            // Grow plants
-            gameState.plots.forEach((plot, i) => {
-                if (plot.state === 'planted') {
-                    // Increment growth stage with cap at MATURE
-                    if (plot.growthStage < GROWTH_STAGES.MAX) {
-                        plot.growthStage++;
-                        
-                        // Bonus growth if well-watered
-                        if (plot.moisture > 60 && plot.growthStage < GROWTH_STAGES.MAX) {
-                            plot.growthStage++;
-                        }
-                        
-                        // Cap at maximum stage
-                        plot.growthStage = Math.min(plot.growthStage, GROWTH_STAGES.MAX);
-                        
-                        // Update icon based on growth stage
-                        if (plot.growthStage === GROWTH_STAGES.SEEDLING) {
-                            plot.icon = plotIcons.seedling;
-                        } else if (plot.growthStage === GROWTH_STAGES.GROWING) {
-                            plot.icon = plotIcons.growing;
-                        } else if (plot.growthStage >= GROWTH_STAGES.MATURE) {
-                            plot.icon = plotIcons.mature;
-                        }
-                    }
-                    
-                    updatePlot(i);
-                }
-                
-                // Natural moisture loss
-                plot.moisture = Math.max(0, plot.moisture - 5);
-                
-                // Cover crops improve soil over time
-                if (plot.state === 'coverCrop') {
-                    plot.organic = Math.min(100, plot.organic + 5);
-                    plot.microbes = Math.min(100, plot.microbes + 5);
-                }
-            });
-
-            // Random climate events
-            if (Math.random() < 0.3) {
-                triggerClimateEvent();
-            }
-
-            // Natural carbon sequestration
-            if (gameState.healthyPlots > 3) {
-                gameState.carbonScore += gameState.healthyPlots;
-                gameState.carbon += Math.floor(gameState.healthyPlots / 2);
-            }
-
-            updateUI();
-        }
-
-        // Climate Events
-        function triggerClimateEvent() {
-            const events = [
-                {
-                    title: '🔥 Heatwave!',
-                    description: 'A severe heatwave is testing your soil moisture. Plots with low moisture are suffering!',
-                    effect: () => {
-                        gameState.plots.forEach((plot, i) => {
-                            if (plot.moisture < 30) {
-                                plot.organic = Math.max(0, plot.organic - 15);
-                                plot.moisture = Math.max(0, plot.moisture - 20);
-                            }
-                            updatePlot(i);
-                        });
-                        gameState.moisture = Math.max(0, gameState.moisture - 10);
-                    }
-                },
-                {
-                    title: '🌊 Heavy Rainfall!',
-                    description: 'Intense rain is flooding the fields. Healthy soil absorbs it, poor soil loses nutrients!',
-                    effect: () => {
-                        gameState.plots.forEach((plot, i) => {
-                            if (plot.organic < 30) {
-                                plot.organic = Math.max(0, plot.organic - 10);
-                                plot.microbes = Math.max(0, plot.microbes - 10);
-                            } else {
-                                plot.moisture = Math.min(100, plot.moisture + 20);
-                            }
-                            updatePlot(i);
-                        });
-                        gameState.moisture += 15;
-                    }
-                }
-            ];
-
-            const event = events[Math.floor(Math.random() * events.length)];
-            showEvent(event.title, event.description);
-            event.effect();
-            vibrate(200);
-            updateUI();
-        }
-
-        // Show Event
-        function showEvent(title, description) {
-            const panel = document.getElementById('events-panel');
-            document.getElementById('event-title').textContent = title;
-            document.getElementById('event-description').textContent = description;
-            panel.style.display = 'block';
-            setTimeout(() => {
-                panel.style.display = 'none';
-            }, 5000);
-        }
-
-        // Create Particle Effect
-        function createParticle(text, plotId) {
-            const plotDiv = document.getElementById(`plot-${plotId}`);
-            const rect = plotDiv.getBoundingClientRect();
-            const particle = document.createElement('div');
-            particle.className = 'particle';
-            particle.textContent = text;
-            particle.style.left = `${rect.left + rect.width / 2}px`;
-            particle.style.top = `${rect.top + rect.height / 2}px`;
-            particle.style.fontSize = '24px';
-            document.body.appendChild(particle);
-            setTimeout(() => particle.remove(), 2000);
-        }
-
-        // Vibrate (mobile)
-        function vibrate(duration) {
-            if (navigator.vibrate) {
-                navigator.vibrate(duration);
-            }
-        }
-
-        // Show Message
-        function showMessage(msg, type) {
-            // Create toast notification
+        
+        // Show toast notification
+        function showToast(message) {
             const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed;
-                bottom: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: ${type === 'error' ? '#c44536' : type === 'success' ? '#4a7c59' : '#4a90a4'};
-                color: white;
-                padding: 12px 24px;
-                border-radius: 8px;
-                font-weight: 600;
-                z-index: 1000;
-                animation: slideUp 0.3s ease;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            `;
-            toast.textContent = msg;
+            toast.className = 'toast';
+            toast.textContent = message;
             document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
         }
-
-        // Start Game
-        function startGame() {
-            document.getElementById('tutorial').style.display = 'none';
-            initGame();
+        
+        // Initialize on load
+        init();
+        
+        // Manual/Guide functions
+        function openManual() {
+            document.getElementById('manualModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
-
-        // Mobile Sidebar Toggle
-        let sidebarOpen = false;
-        document.addEventListener('click', (e) => {
-            if (window.innerWidth <= 768) {
-                const sidebar = document.getElementById('sidebar');
-                if (e.target.closest('.resource')) {
-                    sidebarOpen = !sidebarOpen;
-                    sidebar.classList.toggle('open', sidebarOpen);
-                } else if (!e.target.closest('#sidebar') && sidebarOpen) {
-                    sidebarOpen = false;
-                    sidebar.classList.remove('open');
-                }
+        
+        function closeManual() {
+            document.getElementById('manualModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('manualModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeManual();
             }
         });
-
-        // Auto-save
-        setInterval(() => {
-            localStorage.setItem('groundskeeper-save', JSON.stringify(gameState));
-        }, 10000);
-
-        // Load save on start
-        window.addEventListener('load', () => {
-            const saved = localStorage.getItem('groundskeeper-save');
-            if (saved) {
-                // Could implement load functionality here
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeManual();
             }
         });
     </script>
