@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Groundskeeper - Regenerative Farm Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;700&family=Righteous&family=Urbanist:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --earth-dark: #2d1b0e;
+            --earth-rich: #4a2c1a;
+            --soil-healthy: #6b4423;
+            --leaf-green: #4a7c59;
+            --wheat-gold: #d4a745;
+            --sky-blue: #87ceeb;
+            --water-blue: #4a90a4;
+            --danger-red: #c44536;
+            --dust-gray: #9b8b7e;
+            --carbon-black: #1a1a1a;
+            --life-green: #7fbc8c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Urbanist', sans-serif;
+            background: linear-gradient(135deg, var(--earth-dark) 0%, var(--soil-healthy) 100%);
+            color: #f4f1e8;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Header */
+        #game-header {
+            background: rgba(29, 27, 23, 0.95);
+            padding: 12px 20px;
+            border-bottom: 3px solid var(--wheat-gold);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+        }
+
+        #game-title {
+            font-family: 'Righteous', cursive;
+            font-size: clamp(18px, 4vw, 28px);
+            color: var(--wheat-gold);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            letter-spacing: 1px;
+        }
+
+        #resources {
+            display: flex;
+            gap: clamp(8px, 2vw, 20px);
+            font-size: clamp(11px, 2.5vw, 14px);
+            font-weight: 700;
+        }
+
+        .resource {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(74, 44, 26, 0.6);
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 2px solid var(--wheat-gold);
+            transition: all 0.3s ease;
+        }
+
+        .resource:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(212, 167, 69, 0.5);
+        }
+
+        .resource-icon {
+            font-size: 16px;
+        }
+
+        /* Main Game Area */
+        #game-main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Farm Grid */
+        #farm-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        #farm-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .plot {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, var(--dust-gray) 0%, #7a6b5d 100%);
+            border: 3px solid var(--earth-rich);
+            border-radius: 12px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .plot:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), inset 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .plot:active {
+            transform: translateY(-2px) scale(1.01);
+        }
+
+        .plot.healthy {
+            background: linear-gradient(135deg, var(--leaf-green) 0%, #3d6647 100%);
+            border-color: var(--life-green);
+            animation: pulse-healthy 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse-healthy {
+            0%, 100% { box-shadow: 0 0 15px rgba(127, 188, 140, 0.4); }
+            50% { box-shadow: 0 0 25px rgba(127, 188, 140, 0.7); }
+        }
+
+        .plot-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+        }
+
+        .plot-icon {
+            font-size: clamp(24px, 5vw, 40px);
+            margin-bottom: 5px;
+            animation: sway 3s ease-in-out infinite;
+        }
+
+        @keyframes sway {
+            0%, 100% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
+        }
+
+        .plot-stats {
+            font-size: clamp(9px, 2vw, 11px);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-weight: 700;
+        }
+
+        /* Sidebar */
+        #sidebar {
+            width: clamp(250px, 30vw, 350px);
+            background: rgba(45, 27, 14, 0.95);
+            border-left: 3px solid var(--wheat-gold);
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar-section {
+            background: rgba(74, 44, 26, 0.5);
+            border-radius: 12px;
+            padding: 15px;
+            border: 2px solid var(--soil-healthy);
+        }
+
+        .sidebar-title {
+            font-family: 'Bitter', serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--wheat-gold);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-bar {
+            margin-bottom: 12px;
+        }
+
+        .stat-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .stat-progress {
+            width: 100%;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+            border-radius: 6px;
+        }
+
+        .stat-fill.organic { background: linear-gradient(90deg, var(--soil-healthy), var(--earth-rich)); }
+        .stat-fill.microbes { background: linear-gradient(90deg, var(--life-green), var(--leaf-green)); }
+        .stat-fill.moisture { background: linear-gradient(90deg, var(--water-blue), #2d6a7a); }
+        .stat-fill.carbon { background: linear-gradient(90deg, var(--carbon-black), #3a3a3a); }
+
+        /* Action Buttons */
+        #actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, var(--leaf-green), var(--soil-healthy));
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            font-family: 'Bitter', serif;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        .action-btn.plant { background: linear-gradient(135deg, var(--leaf-green), #3d6647); }
+        .action-btn.compost { background: linear-gradient(135deg, var(--soil-healthy), var(--earth-dark)); }
+        .action-btn.water { background: linear-gradient(135deg, var(--water-blue), #2d6a7a); }
+        .action-btn.livestock { background: linear-gradient(135deg, var(--wheat-gold), #b88a2f); }
+
+        /* Mobile Controls */
+        #mobile-controls {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(29, 27, 23, 0.95);
+            border-radius: 50px;
+            padding: 15px;
+            border: 3px solid var(--wheat-gold);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+            z-index: 200;
+        }
+
+        .thumb-zone {
+            display: flex;
+            gap: 12px;
+        }
+
+        .mobile-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--leaf-green), var(--soil-healthy));
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Events Panel */
+        #events-panel {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 500px;
+            width: 90%;
+            background: rgba(196, 69, 54, 0.95);
+            border: 3px solid var(--danger-red);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+            z-index: 300;
+            display: none;
+            animation: slide-down 0.5s ease;
+        }
+
+        @keyframes slide-down {
+            from { transform: translateX(-50%) translateY(-100px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        .event-title {
+            font-family: 'Righteous', cursive;
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .event-description {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #fff;
+        }
+
+        /* Tutorial */
+        #tutorial {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 600px;
+            width: 90%;
+            background: rgba(45, 27, 14, 0.98);
+            border: 4px solid var(--wheat-gold);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8);
+            z-index: 400;
+            animation: fade-in 0.5s ease;
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        #tutorial h2 {
+            font-family: 'Righteous', cursive;
+            font-size: 28px;
+            color: var(--wheat-gold);
+            margin-bottom: 20px;
+        }
+
+        #tutorial p {
+            font-size: 15px;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        #tutorial ul {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        #tutorial li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .start-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--wheat-gold), #b88a2f);
+            border: none;
+            color: var(--earth-dark);
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Bitter', serif;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(212, 167, 69, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            #sidebar {
+                position: fixed;
+                top: 60px;
+                right: -100%;
+                width: 80%;
+                max-width: 300px;
+                height: calc(100vh - 60px);
+                z-index: 150;
+                transition: right 0.4s ease;
+            }
+
+            #sidebar.open {
+                right: 0;
+            }
+
+            #mobile-controls {
+                display: block;
+            }
+
+            #farm-grid {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                gap: 10px;
+            }
+
+            .resource {
+                padding: 4px 8px;
+            }
+        }
+
+        /* Particles */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 50;
+            animation: float-up 2s ease-out forwards;
+        }
+
+        @keyframes float-up {
+            to {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <!-- Header -->
+        <div id="game-header">
+            <div id="game-title">🌱 GROUNDSKEEPER</div>
+            <div id="resources">
+                <div class="resource">
+                    <span class="resource-icon">💰</span>
+                    <span id="money">$1000</span>
+                </div>
+                <div class="resource">
+                    <span class="resource-icon">🌾</span>
+                    <span id="crops">0</span>
+                </div>
+                <div class="resource">
+                    <span class="resource-icon">⚡</span>
+                    <span id="carbon">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Game Area -->
+        <div id="game-main">
+            <!-- Farm Grid -->
+            <div id="farm-container">
+                <div id="farm-grid"></div>
+            </div>
+
+            <!-- Sidebar -->
+            <div id="sidebar">
+                <div class="sidebar-section">
+                    <div class="sidebar-title">🌍 Soil Health</div>
+                    <div class="stat-bar">
+                        <div class="stat-label">
+                            <span>🌿 Organic Matter</span>
+                            <span id="organic-val">10%</span>
+                        </div>
+                        <div class="stat-progress">
+                            <div class="stat-fill organic" id="organic-bar" style="width: 10%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-bar">
+                        <div class="stat-label">
+                            <span>🦠 Microbial Life</span>
+                            <span id="microbes-val">5%</span>
+                        </div>
+                        <div class="stat-progress">
+                            <div class="stat-fill microbes" id="microbes-bar" style="width: 5%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-bar">
+                        <div class="stat-label">
+                            <span>💧 Moisture</span>
+                            <span id="moisture-val">20%</span>
+                        </div>
+                        <div class="stat-progress">
+                            <div class="stat-fill moisture" id="moisture-bar" style="width: 20%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-bar">
+                        <div class="stat-label">
+                            <span>⚫ Carbon Score</span>
+                            <span id="carbon-val">0</span>
+                        </div>
+                        <div class="stat-progress">
+                            <div class="stat-fill carbon" id="carbon-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">🛠️ Actions</div>
+                    <div id="actions">
+                        <button class="action-btn plant" onclick="selectAction('plant')">
+                            🌱 Plant ($50)
+                        </button>
+                        <button class="action-btn compost" onclick="selectAction('compost')">
+                            🪴 Compost ($30)
+                        </button>
+                        <button class="action-btn water" onclick="selectAction('water')">
+                            💧 Water ($20)
+                        </button>
+                        <button class="action-btn livestock" onclick="selectAction('livestock')">
+                            🐄 Graze ($100)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">📊 Farm Stats</div>
+                    <div style="font-size: 13px; line-height: 1.8;">
+                        <div><strong>Total Plots:</strong> <span id="total-plots">9</span></div>
+                        <div><strong>Healthy Plots:</strong> <span id="healthy-plots">0</span></div>
+                        <div><strong>Biodiversity:</strong> <span id="biodiversity">Low</span></div>
+                        <div><strong>Season:</strong> <span id="season">Spring</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Controls -->
+        <div id="mobile-controls">
+            <div class="thumb-zone">
+                <button class="mobile-btn" onclick="selectAction('plant')" title="Plant">🌱</button>
+                <button class="mobile-btn" onclick="selectAction('compost')" title="Compost">🪴</button>
+                <button class="mobile-btn" onclick="selectAction('water')" title="Water">💧</button>
+                <button class="mobile-btn" onclick="selectAction('livestock')" title="Livestock">🐄</button>
+            </div>
+        </div>
+
+        <!-- Events Panel -->
+        <div id="events-panel">
+            <div class="event-title" id="event-title"></div>
+            <div class="event-description" id="event-description"></div>
+        </div>
+
+        <!-- Tutorial -->
+        <div id="tutorial">
+            <h2>Welcome, Groundskeeper! 🌍</h2>
+            <p>Your mission: Transform this dust bowl into a thriving ecosystem through regenerative farming.</p>
+            <p><strong>How to Play:</strong></p>
+            <ul>
+                <li><strong>Click plots</strong> to apply selected actions</li>
+                <li><strong>Plant crops</strong> 🌱 to increase organic matter and grow food</li>
+                <li><strong>Add compost</strong> 🪴 to boost microbial life and soil health</li>
+                <li><strong>Water plots</strong> 💧 to maintain moisture levels</li>
+                <li><strong>Graze livestock</strong> 🐄 for natural fertilization</li>
+                <li><strong>Watch</strong> soil health bars rise as you heal the earth</li>
+                <li><strong>Harvest</strong> healthy plots to earn money and carbon credits</li>
+            </ul>
+            <p><strong>Tip:</strong> Balance all soil stats for maximum biodiversity!</p>
+            <button class="start-btn" onclick="startGame()">🌾 Start Farming</button>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        const gameState = {
+            money: 1000,
+            crops: 0,
+            carbon: 0,
+            organicMatter: 10,
+            microbes: 5,
+            moisture: 20,
+            carbonScore: 0,
+            selectedAction: null,
+            plots: [],
+            season: 0,
+            seasonTimer: null,
+            healthyPlots: 0,
+            totalPlots: 9
+        };
+
+        const seasons = ['Spring', 'Summer', 'Fall', 'Winter'];
+        const plotIcons = {
+            empty: '🟫',
+            planted: '🌱',
+            growing: '🌿',
+            mature: '🌾',
+            withCompost: '🪴',
+            withWater: '💧',
+            withLivestock: '🐄'
+        };
+
+        // Initialize Game
+        function initGame() {
+            createFarmGrid();
+            updateUI();
+            startSeasonCycle();
+        }
+
+        // Create Farm Grid
+        function createFarmGrid() {
+            const grid = document.getElementById('farm-grid');
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < gameState.totalPlots; i++) {
+                const plot = {
+                    id: i,
+                    organic: 10,
+                    microbes: 5,
+                    moisture: 20,
+                    carbon: 0,
+                    state: 'empty',
+                    growthStage: 0,
+                    icon: plotIcons.empty
+                };
+                gameState.plots.push(plot);
+
+                const plotDiv = document.createElement('div');
+                plotDiv.className = 'plot';
+                plotDiv.id = `plot-${i}`;
+                plotDiv.onclick = () => applyAction(i);
+                plotDiv.innerHTML = `
+                    <div class="plot-content">
+                        <div class="plot-icon">${plot.icon}</div>
+                        <div class="plot-stats">OM: ${plot.organic}%</div>
+                    </div>
+                `;
+                grid.appendChild(plotDiv);
+            }
+        }
+
+        // Select Action
+        function selectAction(action) {
+            gameState.selectedAction = action;
+            document.querySelectorAll('.action-btn, .mobile-btn').forEach(btn => {
+                btn.style.opacity = '0.6';
+            });
+            document.querySelectorAll(`.${action}`).forEach(btn => {
+                btn.style.opacity = '1';
+                btn.style.transform = 'scale(1.1)';
+            });
+            setTimeout(() => {
+                document.querySelectorAll(`.${action}`).forEach(btn => {
+                    btn.style.transform = 'scale(1)';
+                });
+            }, 200);
+        }
+
+        // Apply Action to Plot
+        function applyAction(plotId) {
+            const plot = gameState.plots[plotId];
+            const action = gameState.selectedAction;
+            
+            if (!action) {
+                showMessage('Select an action first!', 'warning');
+                return;
+            }
+
+            const costs = {
+                plant: 50,
+                compost: 30,
+                water: 20,
+                livestock: 100
+            };
+
+            if (gameState.money < costs[action]) {
+                showMessage('Not enough money!', 'error');
+                vibrate(200);
+                return;
+            }
+
+            gameState.money -= costs[action];
+            vibrate(50);
+
+            switch(action) {
+                case 'plant':
+                    if (plot.state === 'empty' || plot.state === 'withCompost') {
+                        plot.state = 'planted';
+                        plot.growthStage = 1;
+                        plot.icon = plotIcons.planted;
+                        plot.organic += 5;
+                        gameState.organicMatter += 2;
+                        createParticle('🌱', plotId);
+                    }
+                    break;
+                case 'compost':
+                    plot.organic += 10;
+                    plot.microbes += 8;
+                    gameState.organicMatter += 3;
+                    gameState.microbes += 3;
+                    if (plot.state === 'empty') plot.state = 'withCompost';
+                    createParticle('🪴', plotId);
+                    break;
+                case 'water':
+                    plot.moisture += 15;
+                    gameState.moisture += 5;
+                    createParticle('💧', plotId);
+                    break;
+                case 'livestock':
+                    plot.organic += 8;
+                    plot.microbes += 10;
+                    plot.carbon += 5;
+                    gameState.organicMatter += 2;
+                    gameState.microbes += 4;
+                    gameState.carbonScore += 3;
+                    createParticle('🐄', plotId);
+                    break;
+            }
+
+            // Cap values
+            plot.organic = Math.min(plot.organic, 100);
+            plot.microbes = Math.min(plot.microbes, 100);
+            plot.moisture = Math.min(plot.moisture, 100);
+            plot.carbon = Math.min(plot.carbon, 100);
+
+            updatePlot(plotId);
+            updateUI();
+            checkHarvest(plotId);
+        }
+
+        // Update Plot Display
+        function updatePlot(plotId) {
+            const plot = gameState.plots[plotId];
+            const plotDiv = document.getElementById(`plot-${plotId}`);
+            
+            // Update icon based on growth
+            if (plot.state === 'planted') {
+                if (plot.growthStage === 1) plot.icon = plotIcons.planted;
+                else if (plot.growthStage === 2) plot.icon = plotIcons.growing;
+                else if (plot.growthStage >= 3) plot.icon = plotIcons.mature;
+            }
+
+            // Check if plot is healthy
+            const isHealthy = plot.organic >= 50 && plot.microbes >= 40 && plot.moisture >= 30;
+            if (isHealthy) {
+                plotDiv.classList.add('healthy');
+            } else {
+                plotDiv.classList.remove('healthy');
+            }
+
+            plotDiv.innerHTML = `
+                <div class="plot-content">
+                    <div class="plot-icon">${plot.icon}</div>
+                    <div class="plot-stats">OM: ${plot.organic}% | M: ${plot.moisture}%</div>
+                </div>
+            `;
+
+            // Count healthy plots
+            gameState.healthyPlots = gameState.plots.filter(p => 
+                p.organic >= 50 && p.microbes >= 40 && p.moisture >= 30
+            ).length;
+        }
+
+        // Check if plot can be harvested
+        function checkHarvest(plotId) {
+            const plot = gameState.plots[plotId];
+            if (plot.state === 'planted' && plot.growthStage >= 3 && plot.organic >= 50) {
+                setTimeout(() => harvest(plotId), 1000);
+            }
+        }
+
+        // Harvest Plot
+        function harvest(plotId) {
+            const plot = gameState.plots[plotId];
+            const quality = Math.floor((plot.organic + plot.microbes + plot.moisture) / 3);
+            const earnings = Math.floor(quality * 2);
+            const carbonEarned = Math.floor(quality / 10);
+
+            gameState.money += earnings;
+            gameState.crops += 1;
+            gameState.carbon += carbonEarned;
+            gameState.carbonScore += carbonEarned;
+
+            createParticle(`+$${earnings}`, plotId);
+            vibrate(100);
+
+            // Reset plot
+            plot.state = 'empty';
+            plot.growthStage = 0;
+            plot.icon = plotIcons.empty;
+            plot.organic = Math.max(30, plot.organic - 20);
+            plot.moisture = Math.max(10, plot.moisture - 15);
+
+            updatePlot(plotId);
+            updateUI();
+        }
+
+        // Update UI
+        function updateUI() {
+            document.getElementById('money').textContent = `$${gameState.money}`;
+            document.getElementById('crops').textContent = gameState.crops;
+            document.getElementById('carbon').textContent = gameState.carbon;
+
+            // Cap global stats
+            gameState.organicMatter = Math.min(gameState.organicMatter, 100);
+            gameState.microbes = Math.min(gameState.microbes, 100);
+            gameState.moisture = Math.min(gameState.moisture, 100);
+            gameState.carbonScore = Math.min(gameState.carbonScore, 100);
+
+            document.getElementById('organic-val').textContent = `${Math.floor(gameState.organicMatter)}%`;
+            document.getElementById('organic-bar').style.width = `${gameState.organicMatter}%`;
+
+            document.getElementById('microbes-val').textContent = `${Math.floor(gameState.microbes)}%`;
+            document.getElementById('microbes-bar').style.width = `${gameState.microbes}%`;
+
+            document.getElementById('moisture-val').textContent = `${Math.floor(gameState.moisture)}%`;
+            document.getElementById('moisture-bar').style.width = `${gameState.moisture}%`;
+
+            document.getElementById('carbon-val').textContent = Math.floor(gameState.carbonScore);
+            document.getElementById('carbon-bar').style.width = `${gameState.carbonScore}%`;
+
+            document.getElementById('healthy-plots').textContent = gameState.healthyPlots;
+
+            // Biodiversity
+            const avgHealth = (gameState.organicMatter + gameState.microbes + gameState.moisture) / 3;
+            let biodiversity = 'Low';
+            if (avgHealth >= 70) biodiversity = 'High';
+            else if (avgHealth >= 40) biodiversity = 'Medium';
+            document.getElementById('biodiversity').textContent = biodiversity;
+        }
+
+        // Season Cycle
+        function startSeasonCycle() {
+            gameState.seasonTimer = setInterval(() => {
+                advanceSeason();
+            }, 30000); // 30 seconds per season
+        }
+
+        function advanceSeason() {
+            gameState.season = (gameState.season + 1) % 4;
+            document.getElementById('season').textContent = seasons[gameState.season];
+
+            // Grow plants
+            gameState.plots.forEach((plot, i) => {
+                if (plot.state === 'planted') {
+                    plot.growthStage++;
+                    if (plot.moisture > 20) {
+                        plot.growthStage++;
+                    }
+                    updatePlot(i);
+                }
+                // Natural moisture loss
+                plot.moisture = Math.max(0, plot.moisture - 5);
+            });
+
+            // Random climate events
+            if (Math.random() < 0.3) {
+                triggerClimateEvent();
+            }
+
+            // Natural carbon sequestration
+            if (gameState.healthyPlots > 3) {
+                gameState.carbonScore += gameState.healthyPlots;
+                gameState.carbon += Math.floor(gameState.healthyPlots / 2);
+            }
+
+            updateUI();
+        }
+
+        // Climate Events
+        function triggerClimateEvent() {
+            const events = [
+                {
+                    title: '🔥 Heatwave!',
+                    description: 'A severe heatwave is testing your soil moisture. Plots with low moisture are suffering!',
+                    effect: () => {
+                        gameState.plots.forEach((plot, i) => {
+                            if (plot.moisture < 30) {
+                                plot.organic = Math.max(0, plot.organic - 15);
+                                plot.moisture = Math.max(0, plot.moisture - 20);
+                            }
+                            updatePlot(i);
+                        });
+                        gameState.moisture = Math.max(0, gameState.moisture - 10);
+                    }
+                },
+                {
+                    title: '🌊 Heavy Rainfall!',
+                    description: 'Intense rain is flooding the fields. Healthy soil absorbs it, poor soil loses nutrients!',
+                    effect: () => {
+                        gameState.plots.forEach((plot, i) => {
+                            if (plot.organic < 30) {
+                                plot.organic = Math.max(0, plot.organic - 10);
+                                plot.microbes = Math.max(0, plot.microbes - 10);
+                            } else {
+                                plot.moisture = Math.min(100, plot.moisture + 20);
+                            }
+                            updatePlot(i);
+                        });
+                        gameState.moisture += 15;
+                    }
+                }
+            ];
+
+            const event = events[Math.floor(Math.random() * events.length)];
+            showEvent(event.title, event.description);
+            event.effect();
+            vibrate(200);
+            updateUI();
+        }
+
+        // Show Event
+        function showEvent(title, description) {
+            const panel = document.getElementById('events-panel');
+            document.getElementById('event-title').textContent = title;
+            document.getElementById('event-description').textContent = description;
+            panel.style.display = 'block';
+            setTimeout(() => {
+                panel.style.display = 'none';
+            }, 5000);
+        }
+
+        // Create Particle Effect
+        function createParticle(emoji, plotId) {
+            const plotDiv = document.getElementById(`plot-${plotId}`);
+            const rect = plotDiv.getBoundingClientRect();
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.textContent = emoji;
+            particle.style.left = `${rect.left + rect.width / 2}px`;
+            particle.style.top = `${rect.top + rect.height / 2}px`;
+            particle.style.fontSize = '24px';
+            document.body.appendChild(particle);
+            setTimeout(() => particle.remove(), 2000);
+        }
+
+        // Vibrate (mobile)
+        function vibrate(duration) {
+            if (navigator.vibrate) {
+                navigator.vibrate(duration);
+            }
+        }
+
+        // Show Message
+        function showMessage(msg, type) {
+            console.log(`[${type}] ${msg}`);
+        }
+
+        // Start Game
+        function startGame() {
+            document.getElementById('tutorial').style.display = 'none';
+            initGame();
+        }
+
+        // Mobile Sidebar Toggle
+        let sidebarOpen = false;
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768) {
+                const sidebar = document.getElementById('sidebar');
+                if (e.target.closest('.resource')) {
+                    sidebarOpen = !sidebarOpen;
+                    sidebar.classList.toggle('open', sidebarOpen);
+                } else if (!e.target.closest('#sidebar') && sidebarOpen) {
+                    sidebarOpen = false;
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+
+        // Auto-save
+        setInterval(() => {
+            localStorage.setItem('groundskeeper-save', JSON.stringify(gameState));
+        }, 10000);
+
+        // Load save on start
+        window.addEventListener('load', () => {
+            const saved = localStorage.getItem('groundskeeper-save');
+            if (saved) {
+                // Could implement load functionality here
+            }
+        });
+    </script>
+</body>
+</html>

@@ -337,11 +337,12 @@
     }
 
     .market-name {
-      font-size: 16px;
-      font-weight: 700;
+      font-size: 18px;
+      font-weight: 800;
       color: var(--text);
       margin-bottom: 2px;
       text-transform: capitalize;
+      letter-spacing: 0.3px;
     }
 
     .market-state {
@@ -427,45 +428,103 @@
 
     .forecast-grid {
       display: none;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 8px;
-      margin-top: 12px;
+      margin-top: 16px;
+      padding: 16px;
+      background: var(--bg);
+      border-radius: 12px;
+      border: 1px solid var(--border);
     }
     .forecast-grid.visible {
-      display: grid;
+      display: block;
     }
 
-    .forecast-day {
-      background: var(--bg);
-      border-radius: 10px;
-      padding: 10px 6px;
-      text-align: center;
-      border: 1px solid var(--border);
-      transition: transform 0.2s, background 0.2s;
-    }
-    .forecast-day:hover {
-      transform: translateY(-2px);
-      background: var(--card);
+    .chart-container {
+      position: relative;
+      height: 200px;
+      margin-bottom: 20px;
     }
 
-    .forecast-date {
+    .chart-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .chart-line {
+      fill: none;
+      stroke: var(--blue);
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .chart-area {
+      fill: var(--blue);
+      opacity: 0.1;
+    }
+
+    .chart-point {
+      fill: var(--blue);
+      stroke: var(--card);
+      stroke-width: 2;
+      cursor: pointer;
+      transition: r 0.2s;
+    }
+
+    .chart-point:hover {
+      r: 6;
+    }
+
+    .chart-grid-line {
+      stroke: var(--border);
+      stroke-width: 1;
+      stroke-dasharray: 4;
+    }
+
+    .chart-label {
       font-size: 10px;
-      color: var(--muted);
-      margin-bottom: 6px;
+      fill: var(--muted);
       font-weight: 600;
     }
 
-    .forecast-price {
-      font-size: 13px;
+    .chart-value {
+      font-size: 11px;
+      fill: var(--text);
       font-weight: 700;
-      color: var(--text);
-      margin-bottom: 4px;
     }
 
-    .forecast-range {
-      font-size: 9px;
-      color: var(--muted);
-      line-height: 1.3;
+    .range-band {
+      fill: var(--blue);
+      opacity: 0.18;
+    }
+
+    .forecast-legend {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 3px;
+      border-radius: 2px;
+    }
+
+    .legend-predicted {
+      background: var(--blue);
+    }
+
+    .legend-range {
+      background: var(--blue);
+      opacity: 0.3;
     }
 
     /* Price Range Indicator */
@@ -646,11 +705,11 @@
 
     /* Responsive adjustments */
     @media (max-width: 400px) {
-      .forecast-grid {
-        grid-template-columns: repeat(4, 1fr);
+      .hero-title {
+        font-size: 28px;
       }
-      .forecast-day:nth-child(n+5) {
-        display: none;
+      .chart-container {
+        height: 180px;
       }
     }
   </style>
@@ -751,6 +810,7 @@ const langs = {
     viewForecast: "देखें",
     hideForecast: "छिपाएं",
     priceRange: "दाम सीमा",
+    predictedPrice: "अनुमानित दाम",
     lower: "कम",
     upper: "ज़्यादा",
     chooseLang: "भाषा चुनें",
@@ -781,6 +841,7 @@ const langs = {
     viewForecast: "View",
     hideForecast: "Hide",
     priceRange: "Price Range",
+    predictedPrice: "Predicted Price",
     lower: "Low",
     upper: "High",
     chooseLang: "Choose Language",
@@ -811,6 +872,7 @@ const langs = {
     viewForecast: "पहा",
     hideForecast: "लपवा",
     priceRange: "किंमत श्रेणी",
+    predictedPrice: "अंदाजित किंमत",
     lower: "कमी",
     upper: "जास्त",
     chooseLang: "भाषा निवडा",
@@ -841,6 +903,7 @@ const langs = {
     viewForecast: "பார்க்கவும்",
     hideForecast: "மறைக்கவும்",
     priceRange: "விலை வரம்பு",
+    predictedPrice: "கணிக்கப்பட்ட விலை",
     lower: "குறைவு",
     upper: "அதிகம்",
     chooseLang: "மொழி தேர்வு",
@@ -979,15 +1042,17 @@ function createCropCard(cropData) {
         </button>
       </div>
       <div class="forecast-grid">
-        ${forecast.map(day => `
-          <div class="forecast-day">
-            <div class="forecast-date">${formatDate(day.date)}</div>
-            <div class="forecast-price">₹${Math.round(day.predicted_price).toLocaleString('en-IN')}</div>
-            <div class="forecast-range">
-              ${Math.round(day.lower_bound)}-<br/>${Math.round(day.upper_bound)}
-            </div>
+        <div class="chart-container" id="chart-${cropName}"></div>
+        <div class="forecast-legend">
+          <div class="legend-item">
+            <div class="legend-color legend-predicted"></div>
+            <span data-i18n="predictedPrice"></span>
           </div>
-        `).join('')}
+          <div class="legend-item">
+            <div class="legend-color legend-range"></div>
+            <span data-i18n="priceRange"></span>
+          </div>
+        </div>
       </div>
     </div>
     ` : ''}
@@ -1001,6 +1066,8 @@ function createCropCard(cropData) {
     explanationText.textContent = explanation.english;
   }
   
+
+  
   return card;
 }
 
@@ -1011,12 +1078,124 @@ function formatDate(dateStr) {
   return `${day} ${month}`;
 }
 
+function renderChart(container, forecast) {
+  const width = container.offsetWidth;
+  const height = 200;
+  const padding = { top: 20, right: 10, bottom: 30, left: 45 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  
+  // Extract data
+  const prices = forecast.map(d => d.predicted_price);
+  const lowerBounds = forecast.map(d => d.lower_bound);
+  const upperBounds = forecast.map(d => d.upper_bound);
+  const dates = forecast.map(d => formatDate(d.date));
+  
+  // Calculate scales
+  const minPrice = Math.min(...lowerBounds);
+  const maxPrice = Math.max(...upperBounds);
+  const priceRange = maxPrice - minPrice;
+  const yMin = minPrice - priceRange * 0.1;
+  const yMax = maxPrice + priceRange * 0.1;
+  
+  const xScale = (i) => padding.left + (i / (forecast.length - 1)) * chartWidth;
+  const yScale = (price) => padding.top + chartHeight - ((price - yMin) / (yMax - yMin)) * chartHeight;
+  
+  // Create SVG
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', 'chart-svg');
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  
+  // Create area path for range band
+  let areaPath = `M ${xScale(0)} ${yScale(lowerBounds[0])}`;
+  for (let i = 0; i < forecast.length; i++) {
+    areaPath += ` L ${xScale(i)} ${yScale(lowerBounds[i])}`;
+  }
+  for (let i = forecast.length - 1; i >= 0; i--) {
+    areaPath += ` L ${xScale(i)} ${yScale(upperBounds[i])}`;
+  }
+  areaPath += ' Z';
+  
+  const area = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  area.setAttribute('d', areaPath);
+  area.setAttribute('class', 'range-band');
+  svg.appendChild(area);
+  
+  // Create line path for predicted prices
+  let linePath = `M ${xScale(0)} ${yScale(prices[0])}`;
+  for (let i = 1; i < prices.length; i++) {
+    linePath += ` L ${xScale(i)} ${yScale(prices[i])}`;
+  }
+  
+  const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  line.setAttribute('d', linePath);
+  line.setAttribute('class', 'chart-line');
+  svg.appendChild(line);
+  
+  // Add grid lines (horizontal)
+  const gridLineCount = 3;
+  for (let i = 0; i <= gridLineCount; i++) {
+    const y = padding.top + (i / gridLineCount) * chartHeight;
+    const gridLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    gridLine.setAttribute('x1', padding.left);
+    gridLine.setAttribute('y1', y);
+    gridLine.setAttribute('x2', padding.left + chartWidth);
+    gridLine.setAttribute('y2', y);
+    gridLine.setAttribute('class', 'chart-grid-line');
+    svg.appendChild(gridLine);
+    
+    // Add price labels
+    const price = yMax - (i / gridLineCount) * (yMax - yMin);
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    label.setAttribute('x', padding.left - 8);
+    label.setAttribute('y', y + 4);
+    label.setAttribute('text-anchor', 'end');
+    label.setAttribute('class', 'chart-value');
+    label.textContent = '₹' + Math.round(price);
+    svg.appendChild(label);
+  }
+  
+  // Add points and labels
+  prices.forEach((price, i) => {
+    // Point
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', xScale(i));
+    circle.setAttribute('cy', yScale(price));
+    circle.setAttribute('r', '4');
+    circle.setAttribute('class', 'chart-point');
+    
+    // Tooltip on hover
+    const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    title.textContent = `${dates[i]}: ₹${Math.round(price)}`;
+    circle.appendChild(title);
+    
+    svg.appendChild(circle);
+    
+    // Date label
+    const dateLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    dateLabel.setAttribute('x', xScale(i));
+    dateLabel.setAttribute('y', height - 10);
+    dateLabel.setAttribute('text-anchor', 'middle');
+    dateLabel.setAttribute('class', 'chart-label');
+    dateLabel.textContent = dates[i];
+    svg.appendChild(dateLabel);
+  });
+  
+  container.innerHTML = '';
+  container.appendChild(svg);
+}
+
 function toggleForecast(btn) {
   const t = langs[currentLang];
   const card = btn.closest('.crop-card');
   const grid = card.querySelector('.forecast-grid');
+  const chartContainer = grid.querySelector('.chart-container');
+  const cropName = card.dataset.crop;
+  const cropData = cropsData.find(c => c.crop === cropName);
+
   const isVisible = grid.classList.contains('visible');
-  
+
   if (isVisible) {
     grid.classList.remove('visible');
     btn.classList.remove('expanded');
@@ -1025,6 +1204,12 @@ function toggleForecast(btn) {
     grid.classList.add('visible');
     btn.classList.add('expanded');
     btn.querySelector('[data-i18n]').textContent = t.hideForecast;
+
+    // ⬅️ render ONLY after visible
+    if (!chartContainer.dataset.rendered) {
+      renderChart(chartContainer, cropData.next_7_days_forecast);
+      chartContainer.dataset.rendered = "true";
+    }
   }
 }
 
