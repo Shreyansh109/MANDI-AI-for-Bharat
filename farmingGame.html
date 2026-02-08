@@ -144,9 +144,20 @@
             animation: pulse-healthy 3s ease-in-out infinite;
         }
 
+        .plot.ready-to-harvest {
+            background: linear-gradient(135deg, var(--wheat-gold) 0%, #c49635 100%);
+            border-color: var(--wheat-gold);
+            animation: pulse-harvest 2s ease-in-out infinite;
+        }
+
         @keyframes pulse-healthy {
             0%, 100% { box-shadow: 0 0 15px rgba(127, 188, 140, 0.4); }
             50% { box-shadow: 0 0 25px rgba(127, 188, 140, 0.7); }
+        }
+
+        @keyframes pulse-harvest {
+            0%, 100% { box-shadow: 0 0 20px rgba(212, 167, 69, 0.6); }
+            50% { box-shadow: 0 0 35px rgba(212, 167, 69, 0.9); }
         }
 
         .plot-content {
@@ -229,262 +240,261 @@
             background: rgba(0, 0, 0, 0.4);
             border-radius: 6px;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .stat-fill {
             height: 100%;
+            background: linear-gradient(90deg, var(--life-green) 0%, var(--wheat-gold) 100%);
             transition: width 0.5s ease;
             border-radius: 6px;
         }
 
-        .stat-fill.organic { background: linear-gradient(90deg, var(--soil-healthy), var(--earth-rich)); }
-        .stat-fill.microbes { background: linear-gradient(90deg, var(--life-green), var(--leaf-green)); }
-        .stat-fill.moisture { background: linear-gradient(90deg, var(--water-blue), #2d6a7a); }
-        .stat-fill.carbon { background: linear-gradient(90deg, var(--carbon-black), #3a3a3a); }
-
-        /* Action Buttons */
-        #actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .action-btn {
-            background: linear-gradient(135deg, var(--leaf-green), var(--soil-healthy));
-            border: none;
-            color: white;
+        .action-button {
+            width: 100%;
             padding: 12px;
-            border-radius: 10px;
-            font-family: 'Bitter', serif;
-            font-size: 13px;
+            margin: 8px 0;
+            background: linear-gradient(135deg, var(--leaf-green) 0%, #3d6647 100%);
+            border: 2px solid var(--life-green);
+            color: #fff;
             font-weight: 700;
+            font-size: 14px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
-        .action-btn:hover {
+        .action-button:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 6px 20px rgba(74, 124, 89, 0.4);
         }
 
-        .action-btn:active {
+        .action-button:active:not(:disabled) {
             transform: translateY(0);
         }
 
-        .action-btn.plant { background: linear-gradient(135deg, var(--leaf-green), #3d6647); }
-        .action-btn.compost { background: linear-gradient(135deg, var(--soil-healthy), var(--earth-dark)); }
-        .action-btn.water { background: linear-gradient(135deg, var(--water-blue), #2d6a7a); }
-        .action-btn.livestock { background: linear-gradient(135deg, var(--wheat-gold), #b88a2f); }
-
-        /* Mobile Controls */
-        #mobile-controls {
-            display: none;
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(29, 27, 23, 0.95);
-            border-radius: 50px;
-            padding: 15px;
-            border: 3px solid var(--wheat-gold);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
-            z-index: 200;
+        .action-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(50%);
         }
 
-        .thumb-zone {
-            display: flex;
-            gap: 12px;
-        }
-
-        .mobile-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: none;
-            background: linear-gradient(135deg, var(--leaf-green), var(--soil-healthy));
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .mobile-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* Events Panel */
-        #events-panel {
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            max-width: 500px;
-            width: 90%;
-            background: rgba(196, 69, 54, 0.95);
-            border: 3px solid var(--danger-red);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
-            z-index: 300;
-            display: none;
-            animation: slide-down 0.5s ease;
-        }
-
-        @keyframes slide-down {
-            from { transform: translateX(-50%) translateY(-100px); opacity: 0; }
-            to { transform: translateX(-50%) translateY(0); opacity: 1; }
-        }
-
-        .event-title {
-            font-family: 'Righteous', cursive;
-            font-size: 24px;
-            margin-bottom: 10px;
-            color: #fff;
-        }
-
-        .event-description {
-            font-size: 14px;
-            line-height: 1.6;
-            color: #fff;
+        .action-button .cost {
+            font-size: 11px;
+            opacity: 0.9;
         }
 
         /* Tutorial */
         #tutorial {
             position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .tutorial-content {
+            background: linear-gradient(135deg, var(--earth-rich) 0%, var(--soil-healthy) 100%);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 600px;
+            border: 4px solid var(--wheat-gold);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .tutorial-title {
+            font-family: 'Righteous', cursive;
+            font-size: 36px;
+            color: var(--wheat-gold);
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        .tutorial-text {
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            color: #f4f1e8;
+        }
+
+        .start-button {
+            padding: 16px 40px;
+            background: linear-gradient(135deg, var(--wheat-gold) 0%, #b8903a 100%);
+            border: 3px solid var(--wheat-gold);
+            color: var(--earth-dark);
+            font-weight: 700;
+            font-size: 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(212, 167, 69, 0.4);
+        }
+
+        .start-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(212, 167, 69, 0.6);
+        }
+
+        /* Events Panel */
+        #events-panel {
+            position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            max-width: 600px;
-            width: 90%;
-            background: rgba(45, 27, 14, 0.98);
-            border: 4px solid var(--wheat-gold);
-            border-radius: 20px;
+            background: linear-gradient(135deg, var(--danger-red) 0%, #a33829 100%);
             padding: 30px;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8);
-            z-index: 400;
-            animation: fade-in 0.5s ease;
+            border-radius: 16px;
+            border: 4px solid var(--wheat-gold);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            z-index: 500;
+            max-width: 90%;
+            width: 500px;
+            display: none;
+            animation: slideIn 0.5s ease;
         }
 
-        @keyframes fade-in {
-            from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
-            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
         }
 
-        #tutorial h2 {
+        .event-title {
             font-family: 'Righteous', cursive;
             font-size: 28px;
-            color: var(--wheat-gold);
-            margin-bottom: 20px;
-        }
-
-        #tutorial p {
-            font-size: 15px;
-            line-height: 1.7;
             margin-bottom: 15px;
+            text-align: center;
         }
 
-        #tutorial ul {
-            margin-left: 20px;
-            margin-bottom: 20px;
-        }
-
-        #tutorial li {
-            margin-bottom: 10px;
-            line-height: 1.5;
-        }
-
-        .start-btn {
-            width: 100%;
-            background: linear-gradient(135deg, var(--wheat-gold), #b88a2f);
-            border: none;
-            color: var(--earth-dark);
-            padding: 15px;
-            border-radius: 10px;
-            font-family: 'Bitter', serif;
-            font-size: 18px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .start-btn:hover {
-            transform: scale(1.02);
-            box-shadow: 0 6px 20px rgba(212, 167, 69, 0.5);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            #sidebar {
-                position: fixed;
-                top: 60px;
-                right: -100%;
-                width: 80%;
-                max-width: 300px;
-                height: calc(100vh - 60px);
-                z-index: 150;
-                transition: right 0.4s ease;
-            }
-
-            #sidebar.open {
-                right: 0;
-            }
-
-            #mobile-controls {
-                display: block;
-            }
-
-            #farm-grid {
-                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-                gap: 10px;
-            }
-
-            .resource {
-                padding: 4px 8px;
-            }
+        .event-description {
+            font-size: 16px;
+            line-height: 1.6;
+            text-align: center;
         }
 
         /* Particles */
         .particle {
             position: fixed;
             pointer-events: none;
-            z-index: 50;
             animation: float-up 2s ease-out forwards;
+            z-index: 1000;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
         }
 
         @keyframes float-up {
-            to {
-                transform: translateY(-100px);
-                opacity: 0;
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
             }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) scale(1.5);
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            #sidebar {
+                position: fixed;
+                right: -100%;
+                top: 0;
+                height: 100%;
+                width: 80%;
+                max-width: 300px;
+                transition: right 0.3s ease;
+                z-index: 200;
+            }
+
+            #sidebar.open {
+                right: 0;
+            }
+
+            #farm-grid {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                gap: 10px;
+            }
+        }
+
+        /* Info Section */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 12px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+        }
+
+        .info-label {
+            font-weight: 500;
+            opacity: 0.8;
+        }
+
+        .info-value {
+            font-weight: 700;
+            color: var(--wheat-gold);
         }
     </style>
 </head>
 <body>
+    <!-- Tutorial Screen -->
+    <div id="tutorial">
+        <div class="tutorial-content">
+            <div class="tutorial-title">🌱 Groundskeeper 🌱</div>
+            <div class="tutorial-text">
+                <p style="margin-bottom: 15px;">Welcome to your regenerative farm! Build healthy soil through organic matter, microbial life, and water management.</p>
+                <p style="margin-bottom: 15px;"><strong>🌾 Your Mission:</strong> Grow crops while sequestering carbon and building biodiversity.</p>
+                <p><strong>💡 Tips:</strong> Compost enriches soil, cover crops add life, water keeps everything thriving. Healthy plots glow green!</p>
+            </div>
+            <button class="start-button" onclick="startGame()">Start Farming</button>
+        </div>
+    </div>
+
+    <!-- Events Panel -->
+    <div id="events-panel">
+        <div class="event-title" id="event-title"></div>
+        <div class="event-description" id="event-description"></div>
+    </div>
+
+    <!-- Main Game Container -->
     <div id="game-container">
         <!-- Header -->
         <div id="game-header">
-            <div id="game-title">🌱 GROUNDSKEEPER</div>
+            <div id="game-title">🌱 Groundskeeper</div>
             <div id="resources">
                 <div class="resource">
                     <span class="resource-icon">💰</span>
-                    <span id="money">$1000</span>
+                    <span id="money">500</span>
                 </div>
                 <div class="resource">
                     <span class="resource-icon">🌾</span>
                     <span id="crops">0</span>
                 </div>
                 <div class="resource">
-                    <span class="resource-icon">⚡</span>
+                    <span class="resource-icon">🌍</span>
                     <span id="carbon">0</span>
                 </div>
             </div>
@@ -492,319 +502,267 @@
 
         <!-- Main Game Area -->
         <div id="game-main">
-            <!-- Farm Grid -->
+            <!-- Farm Container -->
             <div id="farm-container">
                 <div id="farm-grid"></div>
             </div>
 
             <!-- Sidebar -->
             <div id="sidebar">
+                <!-- Farm Health -->
                 <div class="sidebar-section">
-                    <div class="sidebar-title">🌍 Soil Health</div>
+                    <div class="sidebar-title">🌿 Farm Health</div>
                     <div class="stat-bar">
                         <div class="stat-label">
-                            <span>🌿 Organic Matter</span>
-                            <span id="organic-val">10%</span>
+                            <span>Organic Matter</span>
+                            <span id="organic-val">50%</span>
                         </div>
                         <div class="stat-progress">
-                            <div class="stat-fill organic" id="organic-bar" style="width: 10%"></div>
+                            <div class="stat-fill" id="organic-bar" style="width: 50%;"></div>
                         </div>
                     </div>
                     <div class="stat-bar">
                         <div class="stat-label">
-                            <span>🦠 Microbial Life</span>
-                            <span id="microbes-val">5%</span>
+                            <span>Soil Microbes</span>
+                            <span id="microbes-val">50%</span>
                         </div>
                         <div class="stat-progress">
-                            <div class="stat-fill microbes" id="microbes-bar" style="width: 5%"></div>
+                            <div class="stat-fill" id="microbes-bar" style="width: 50%;"></div>
                         </div>
                     </div>
                     <div class="stat-bar">
                         <div class="stat-label">
-                            <span>💧 Moisture</span>
-                            <span id="moisture-val">20%</span>
+                            <span>Soil Moisture</span>
+                            <span id="moisture-val">50%</span>
                         </div>
                         <div class="stat-progress">
-                            <div class="stat-fill moisture" id="moisture-bar" style="width: 20%"></div>
+                            <div class="stat-fill" id="moisture-bar" style="width: 50%;"></div>
                         </div>
                     </div>
                     <div class="stat-bar">
                         <div class="stat-label">
-                            <span>⚫ Carbon Score</span>
+                            <span>Carbon Sequestered</span>
                             <span id="carbon-val">0</span>
                         </div>
                         <div class="stat-progress">
-                            <div class="stat-fill carbon" id="carbon-bar" style="width: 0%"></div>
+                            <div class="stat-fill" id="carbon-bar" style="width: 0%;"></div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Actions -->
                 <div class="sidebar-section">
-                    <div class="sidebar-title">🛠️ Actions</div>
-                    <div id="actions">
-                        <button class="action-btn plant" onclick="selectAction('plant')">
-                            🌱 Plant ($50)
-                        </button>
-                        <button class="action-btn compost" onclick="selectAction('compost')">
-                            🪴 Compost ($30)
-                        </button>
-                        <button class="action-btn water" onclick="selectAction('water')">
-                            💧 Water ($20)
-                        </button>
-                        <button class="action-btn livestock" onclick="selectAction('livestock')">
-                            🐄 Graze ($100)
-                        </button>
-                    </div>
+                    <div class="sidebar-title">⚡ Actions</div>
+                    <button class="action-button" onclick="applyCompost()">
+                        🍂 Add Compost<br>
+                        <span class="cost">Cost: $50</span>
+                    </button>
+                    <button class="action-button" onclick="plantCoverCrop()">
+                        🌱 Cover Crop<br>
+                        <span class="cost">Cost: $30</span>
+                    </button>
+                    <button class="action-button" onclick="irrigate()">
+                        💧 Irrigate All<br>
+                        <span class="cost">Cost: $40</span>
+                    </button>
                 </div>
 
+                <!-- Farm Info -->
                 <div class="sidebar-section">
                     <div class="sidebar-title">📊 Farm Stats</div>
-                    <div style="font-size: 13px; line-height: 1.8;">
-                        <div><strong>Total Plots:</strong> <span id="total-plots">9</span></div>
-                        <div><strong>Healthy Plots:</strong> <span id="healthy-plots">0</span></div>
-                        <div><strong>Biodiversity:</strong> <span id="biodiversity">Low</span></div>
-                        <div><strong>Season:</strong> <span id="season">Spring</span></div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Season:</span>
+                            <span class="info-value" id="season">Spring</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Healthy Plots:</span>
+                            <span class="info-value" id="healthy-plots">0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Biodiversity:</span>
+                            <span class="info-value" id="biodiversity">Low</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Total Plots:</span>
+                            <span class="info-value">12</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Mobile Controls -->
-        <div id="mobile-controls">
-            <div class="thumb-zone">
-                <button class="mobile-btn" onclick="selectAction('plant')" title="Plant">🌱</button>
-                <button class="mobile-btn" onclick="selectAction('compost')" title="Compost">🪴</button>
-                <button class="mobile-btn" onclick="selectAction('water')" title="Water">💧</button>
-                <button class="mobile-btn" onclick="selectAction('livestock')" title="Livestock">🐄</button>
-            </div>
-        </div>
-
-        <!-- Events Panel -->
-        <div id="events-panel">
-            <div class="event-title" id="event-title"></div>
-            <div class="event-description" id="event-description"></div>
-        </div>
-
-        <!-- Tutorial -->
-        <div id="tutorial">
-            <h2>Welcome, Groundskeeper! 🌍</h2>
-            <p>Your mission: Transform this dust bowl into a thriving ecosystem through regenerative farming.</p>
-            <p><strong>How to Play:</strong></p>
-            <ul>
-                <li><strong>Click plots</strong> to apply selected actions</li>
-                <li><strong>Plant crops</strong> 🌱 to increase organic matter and grow food</li>
-                <li><strong>Add compost</strong> 🪴 to boost microbial life and soil health</li>
-                <li><strong>Water plots</strong> 💧 to maintain moisture levels</li>
-                <li><strong>Graze livestock</strong> 🐄 for natural fertilization</li>
-                <li><strong>Watch</strong> soil health bars rise as you heal the earth</li>
-                <li><strong>Harvest</strong> healthy plots to earn money and carbon credits</li>
-            </ul>
-            <p><strong>Tip:</strong> Balance all soil stats for maximum biodiversity!</p>
-            <button class="start-btn" onclick="startGame()">🌾 Start Farming</button>
         </div>
     </div>
 
     <script>
         // Game State
         const gameState = {
-            money: 1000,
+            money: 500,
             crops: 0,
             carbon: 0,
-            organicMatter: 10,
-            microbes: 5,
-            moisture: 20,
-            carbonScore: 0,
-            selectedAction: null,
-            plots: [],
             season: 0,
-            seasonTimer: null,
+            plots: [],
+            organicMatter: 50,
+            microbes: 50,
+            moisture: 50,
+            carbonScore: 0,
             healthyPlots: 0,
-            totalPlots: 9
+            seasonTimer: null
         };
 
-        const seasons = ['Spring', 'Summer', 'Fall', 'Winter'];
+        const seasons = ['Spring 🌸', 'Summer ☀️', 'Fall 🍂', 'Winter ❄️'];
         const plotIcons = {
             empty: '🟫',
-            planted: '🌱',
+            seedling: '🌱',
             growing: '🌿',
             mature: '🌾',
-            withCompost: '🪴',
-            withWater: '💧',
-            withLivestock: '🐄'
+            coverCrop: '🍀'
+        };
+
+        const GROWTH_STAGES = {
+            SEEDLING: 1,
+            GROWING: 2,
+            MATURE: 3,
+            MAX: 3  // Cap growth at mature stage
         };
 
         // Initialize Game
         function initGame() {
-            createFarmGrid();
+            // Create 12 plots
+            for (let i = 0; i < 12; i++) {
+                gameState.plots.push({
+                    state: 'empty', // empty, planted, coverCrop
+                    organic: 50,
+                    microbes: 50,
+                    moisture: 50,
+                    growthStage: 0,
+                    icon: plotIcons.empty
+                });
+            }
+
+            renderPlots();
             updateUI();
             startSeasonCycle();
         }
 
-        // Create Farm Grid
-        function createFarmGrid() {
+        // Render Plots
+        function renderPlots() {
             const grid = document.getElementById('farm-grid');
             grid.innerHTML = '';
-            
-            for (let i = 0; i < gameState.totalPlots; i++) {
-                const plot = {
-                    id: i,
-                    organic: 10,
-                    microbes: 5,
-                    moisture: 20,
-                    carbon: 0,
-                    state: 'empty',
-                    growthStage: 0,
-                    icon: plotIcons.empty
-                };
-                gameState.plots.push(plot);
-
+            gameState.plots.forEach((plot, i) => {
                 const plotDiv = document.createElement('div');
                 plotDiv.className = 'plot';
                 plotDiv.id = `plot-${i}`;
-                plotDiv.onclick = () => applyAction(i);
-                plotDiv.innerHTML = `
-                    <div class="plot-content">
-                        <div class="plot-icon">${plot.icon}</div>
-                        <div class="plot-stats">OM: ${plot.organic}%</div>
-                    </div>
-                `;
+                plotDiv.onclick = () => handlePlotClick(i);
+                
+                const content = document.createElement('div');
+                content.className = 'plot-content';
+                
+                const icon = document.createElement('div');
+                icon.className = 'plot-icon';
+                icon.textContent = plot.icon;
+                
+                const stats = document.createElement('div');
+                stats.className = 'plot-stats';
+                stats.innerHTML = `O:${plot.organic}% M:${plot.microbes}%`;
+                
+                content.appendChild(icon);
+                content.appendChild(stats);
+                plotDiv.appendChild(content);
                 grid.appendChild(plotDiv);
-            }
-        }
-
-        // Select Action
-        function selectAction(action) {
-            gameState.selectedAction = action;
-            document.querySelectorAll('.action-btn, .mobile-btn').forEach(btn => {
-                btn.style.opacity = '0.6';
+                
+                updatePlotAppearance(i);
             });
-            document.querySelectorAll(`.${action}`).forEach(btn => {
-                btn.style.opacity = '1';
-                btn.style.transform = 'scale(1.1)';
-            });
-            setTimeout(() => {
-                document.querySelectorAll(`.${action}`).forEach(btn => {
-                    btn.style.transform = 'scale(1)';
-                });
-            }, 200);
         }
 
-        // Apply Action to Plot
-        function applyAction(plotId) {
-            const plot = gameState.plots[plotId];
-            const action = gameState.selectedAction;
-            
-            if (!action) {
-                showMessage('Select an action first!', 'warning');
-                return;
-            }
-
-            const costs = {
-                plant: 50,
-                compost: 30,
-                water: 20,
-                livestock: 100
-            };
-
-            if (gameState.money < costs[action]) {
-                showMessage('Not enough money!', 'error');
-                vibrate(200);
-                return;
-            }
-
-            gameState.money -= costs[action];
-            vibrate(50);
-
-            switch(action) {
-                case 'plant':
-                    if (plot.state === 'empty' || plot.state === 'withCompost') {
-                        plot.state = 'planted';
-                        plot.growthStage = 1;
-                        plot.icon = plotIcons.planted;
-                        plot.organic += 5;
-                        gameState.organicMatter += 2;
-                        createParticle('🌱', plotId);
-                    }
-                    break;
-                case 'compost':
-                    plot.organic += 10;
-                    plot.microbes += 8;
-                    gameState.organicMatter += 3;
-                    gameState.microbes += 3;
-                    if (plot.state === 'empty') plot.state = 'withCompost';
-                    createParticle('🪴', plotId);
-                    break;
-                case 'water':
-                    plot.moisture += 15;
-                    gameState.moisture += 5;
-                    createParticle('💧', plotId);
-                    break;
-                case 'livestock':
-                    plot.organic += 8;
-                    plot.microbes += 10;
-                    plot.carbon += 5;
-                    gameState.organicMatter += 2;
-                    gameState.microbes += 4;
-                    gameState.carbonScore += 3;
-                    createParticle('🐄', plotId);
-                    break;
-            }
-
-            // Cap values
-            plot.organic = Math.min(plot.organic, 100);
-            plot.microbes = Math.min(plot.microbes, 100);
-            plot.moisture = Math.min(plot.moisture, 100);
-            plot.carbon = Math.min(plot.carbon, 100);
-
-            updatePlot(plotId);
-            updateUI();
-            checkHarvest(plotId);
-        }
-
-        // Update Plot Display
+        // Update Single Plot
         function updatePlot(plotId) {
             const plot = gameState.plots[plotId];
             const plotDiv = document.getElementById(`plot-${plotId}`);
+            if (!plotDiv) return;
+
+            const icon = plotDiv.querySelector('.plot-icon');
+            const stats = plotDiv.querySelector('.plot-stats');
             
-            // Update icon based on growth
-            if (plot.state === 'planted') {
-                if (plot.growthStage === 1) plot.icon = plotIcons.planted;
-                else if (plot.growthStage === 2) plot.icon = plotIcons.growing;
-                else if (plot.growthStage >= 3) plot.icon = plotIcons.mature;
-            }
-
-            // Check if plot is healthy
-            const isHealthy = plot.organic >= 50 && plot.microbes >= 40 && plot.moisture >= 30;
-            if (isHealthy) {
-                plotDiv.classList.add('healthy');
-            } else {
-                plotDiv.classList.remove('healthy');
-            }
-
-            plotDiv.innerHTML = `
-                <div class="plot-content">
-                    <div class="plot-icon">${plot.icon}</div>
-                    <div class="plot-stats">OM: ${plot.organic}% | M: ${plot.moisture}%</div>
-                </div>
-            `;
-
-            // Count healthy plots
-            gameState.healthyPlots = gameState.plots.filter(p => 
-                p.organic >= 50 && p.microbes >= 40 && p.moisture >= 30
-            ).length;
+            icon.textContent = plot.icon;
+            stats.innerHTML = `O:${plot.organic}% M:${plot.microbes}%`;
+            
+            updatePlotAppearance(plotId);
         }
 
-        // Check if plot can be harvested
-        function checkHarvest(plotId) {
+        // Update Plot Visual Appearance
+        function updatePlotAppearance(plotId) {
             const plot = gameState.plots[plotId];
-            if (plot.state === 'planted' && plot.growthStage >= 3 && plot.organic >= 50) {
-                setTimeout(() => harvest(plotId), 1000);
+            const plotDiv = document.getElementById(`plot-${plotId}`);
+            if (!plotDiv) return;
+
+            // Remove all special classes
+            plotDiv.classList.remove('healthy', 'ready-to-harvest');
+            
+            // Check if plot is ready to harvest
+            if (plot.state === 'planted' && isReadyToHarvest(plotId)) {
+                plotDiv.classList.add('ready-to-harvest');
             }
+            // Check if plot is healthy
+            else if (plot.organic >= 50 && plot.microbes >= 40 && plot.moisture >= 30) {
+                plotDiv.classList.add('healthy');
+            }
+        }
+
+        // Handle Plot Click
+        function handlePlotClick(plotId) {
+            const plot = gameState.plots[plotId];
+            
+            if (plot.state === 'empty') {
+                plantCrop(plotId);
+            } else if (plot.state === 'planted' && isReadyToHarvest(plotId)) {
+                harvest(plotId);
+            } else if (plot.state === 'coverCrop') {
+                showMessage('Cover crop is enriching the soil!', 'info');
+            } else if (plot.state === 'planted') {
+                const stageNames = ['', 'seedling', 'growing', 'mature'];
+                const stageName = stageNames[plot.growthStage] || 'growing';
+                showMessage(`Crop is still growing (${stageName} stage)`, 'info');
+            }
+        }
+
+        // Plant Crop
+        function plantCrop(plotId) {
+            if (gameState.money < 20) {
+                showMessage('Not enough money to plant! Need $20', 'error');
+                return;
+            }
+
+            const plot = gameState.plots[plotId];
+            gameState.money -= 20;
+            plot.state = 'planted';
+            plot.growthStage = GROWTH_STAGES.SEEDLING;
+            plot.icon = plotIcons.seedling;
+            
+            createParticle('🌱', plotId);
+            vibrate(50);
+            
+            updatePlot(plotId);
+            updateUI();
+        }
+
+        // Check if crop is ready to harvest
+        function isReadyToHarvest(plotId) {
+            const plot = gameState.plots[plotId];
+            // Fixed detection: crop must be planted, at mature stage, and have adequate organic matter
+            return plot.state === 'planted' && 
+                   plot.growthStage >= GROWTH_STAGES.MATURE && 
+                   plot.organic >= 50;
         }
 
         // Harvest Plot
         function harvest(plotId) {
             const plot = gameState.plots[plotId];
+            
+            if (!isReadyToHarvest(plotId)) {
+                showMessage('Crop is not ready to harvest yet!', 'error');
+                return;
+            }
+
             const quality = Math.floor((plot.organic + plot.microbes + plot.moisture) / 3);
             const earnings = Math.floor(quality * 2);
             const carbonEarned = Math.floor(quality / 10);
@@ -828,8 +786,95 @@
             updateUI();
         }
 
+        // Apply Compost (Global Action)
+        function applyCompost() {
+            if (gameState.money < 50) {
+                showMessage('Not enough money! Need $50', 'error');
+                return;
+            }
+
+            gameState.money -= 50;
+            gameState.organicMatter = Math.min(100, gameState.organicMatter + 15);
+            
+            gameState.plots.forEach((plot, i) => {
+                plot.organic = Math.min(100, plot.organic + 15);
+                updatePlot(i);
+            });
+
+            vibrate(100);
+            updateUI();
+            showMessage('Compost applied! Organic matter increased!', 'success');
+        }
+
+        // Plant Cover Crop (Global Action)
+        function plantCoverCrop() {
+            if (gameState.money < 30) {
+                showMessage('Not enough money! Need $30', 'error');
+                return;
+            }
+
+            const emptyPlots = gameState.plots.filter(p => p.state === 'empty');
+            if (emptyPlots.length === 0) {
+                showMessage('No empty plots available!', 'error');
+                return;
+            }
+
+            gameState.money -= 30;
+            gameState.microbes = Math.min(100, gameState.microbes + 10);
+
+            gameState.plots.forEach((plot, i) => {
+                if (plot.state === 'empty') {
+                    plot.state = 'coverCrop';
+                    plot.icon = plotIcons.coverCrop;
+                    plot.microbes = Math.min(100, plot.microbes + 20);
+                    plot.organic = Math.min(100, plot.organic + 10);
+                    updatePlot(i);
+                }
+            });
+
+            vibrate(100);
+            updateUI();
+            showMessage('Cover crops planted! Soil microbes boosted!', 'success');
+        }
+
+        // Irrigate (Global Action)
+        function irrigate() {
+            if (gameState.money < 40) {
+                showMessage('Not enough money! Need $40', 'error');
+                return;
+            }
+
+            gameState.money -= 40;
+            gameState.moisture = Math.min(100, gameState.moisture + 20);
+
+            gameState.plots.forEach((plot, i) => {
+                plot.moisture = Math.min(100, plot.moisture + 25);
+                updatePlot(i);
+            });
+
+            vibrate(100);
+            updateUI();
+            showMessage('Irrigation complete! All plots watered!', 'success');
+        }
+
+        // Update Global Stats
+        function updateGlobalStats() {
+            // Average plot stats
+            const totalPlots = gameState.plots.length;
+            gameState.organicMatter = gameState.plots.reduce((sum, p) => sum + p.organic, 0) / totalPlots;
+            gameState.microbes = gameState.plots.reduce((sum, p) => sum + p.microbes, 0) / totalPlots;
+            gameState.moisture = gameState.plots.reduce((sum, p) => sum + p.moisture, 0) / totalPlots;
+
+            // Count healthy plots
+            gameState.healthyPlots = gameState.plots.filter(p => 
+                p.organic >= 50 && p.microbes >= 40 && p.moisture >= 30
+            ).length;
+        }
+
         // Update UI
         function updateUI() {
+            updateGlobalStats();
+
             document.getElementById('money').textContent = `$${gameState.money}`;
             document.getElementById('crops').textContent = gameState.crops;
             document.getElementById('carbon').textContent = gameState.carbon;
@@ -876,14 +921,39 @@
             // Grow plants
             gameState.plots.forEach((plot, i) => {
                 if (plot.state === 'planted') {
-                    plot.growthStage++;
-                    if (plot.moisture > 20) {
+                    // Increment growth stage with cap at MATURE
+                    if (plot.growthStage < GROWTH_STAGES.MAX) {
                         plot.growthStage++;
+                        
+                        // Bonus growth if well-watered
+                        if (plot.moisture > 60 && plot.growthStage < GROWTH_STAGES.MAX) {
+                            plot.growthStage++;
+                        }
+                        
+                        // Cap at maximum stage
+                        plot.growthStage = Math.min(plot.growthStage, GROWTH_STAGES.MAX);
+                        
+                        // Update icon based on growth stage
+                        if (plot.growthStage === GROWTH_STAGES.SEEDLING) {
+                            plot.icon = plotIcons.seedling;
+                        } else if (plot.growthStage === GROWTH_STAGES.GROWING) {
+                            plot.icon = plotIcons.growing;
+                        } else if (plot.growthStage >= GROWTH_STAGES.MATURE) {
+                            plot.icon = plotIcons.mature;
+                        }
                     }
+                    
                     updatePlot(i);
                 }
+                
                 // Natural moisture loss
                 plot.moisture = Math.max(0, plot.moisture - 5);
+                
+                // Cover crops improve soil over time
+                if (plot.state === 'coverCrop') {
+                    plot.organic = Math.min(100, plot.organic + 5);
+                    plot.microbes = Math.min(100, plot.microbes + 5);
+                }
             });
 
             // Random climate events
@@ -954,12 +1024,12 @@
         }
 
         // Create Particle Effect
-        function createParticle(emoji, plotId) {
+        function createParticle(text, plotId) {
             const plotDiv = document.getElementById(`plot-${plotId}`);
             const rect = plotDiv.getBoundingClientRect();
             const particle = document.createElement('div');
             particle.className = 'particle';
-            particle.textContent = emoji;
+            particle.textContent = text;
             particle.style.left = `${rect.left + rect.width / 2}px`;
             particle.style.top = `${rect.top + rect.height / 2}px`;
             particle.style.fontSize = '24px';
@@ -976,7 +1046,25 @@
 
         // Show Message
         function showMessage(msg, type) {
-            console.log(`[${type}] ${msg}`);
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${type === 'error' ? '#c44536' : type === 'success' ? '#4a7c59' : '#4a90a4'};
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-weight: 600;
+                z-index: 1000;
+                animation: slideUp 0.3s ease;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            `;
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
 
         // Start Game
