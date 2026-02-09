@@ -236,10 +236,9 @@
     .game-icon:active {
       transform: scale(0.95);
     }
-    .game-icon svg {
-      width: 20px;
-      height: 20px;
-      fill: white;
+    .game-icon {
+      font-size: 20px;
+      line-height: 1;
     }
     body.dark .game-icon {
       box-shadow: 0 2px 8px rgba(90, 173, 130, 0.4);
@@ -766,9 +765,7 @@
     </div>
 
     <a href="farmingGame.html" class="game-icon" title="Play Supply Chain Game">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-      </svg>
+      🎮
     </a>
 
     <div class="toggle-wrap" onclick="toggleTheme()" tabindex="0" role="button">
