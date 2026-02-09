@@ -213,6 +213,41 @@
     body.dark .toggle-knob .icon-sun  { opacity: 0; transform: scale(0.5) rotate(30deg); }
     body.dark .toggle-knob .icon-moon { opacity: 1; transform: scale(1) rotate(0deg); }
 
+    /* ========== GAME ICON ========== */
+    .game-icon {
+      position: relative;
+      width: 34px;
+      height: 34px;
+      background: var(--accent-veg);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(.4,0,.2,1);
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(58, 125, 92, 0.3);
+      text-decoration: none;
+    }
+    .game-icon:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(58, 125, 92, 0.5);
+    }
+    .game-icon:active {
+      transform: scale(0.95);
+    }
+    .game-icon svg {
+      width: 20px;
+      height: 20px;
+      fill: white;
+    }
+    body.dark .game-icon {
+      box-shadow: 0 2px 8px rgba(90, 173, 130, 0.4);
+    }
+    body.dark .game-icon:hover {
+      box-shadow: 0 4px 12px rgba(90, 173, 130, 0.6);
+    }
+
     /* ========== HERO ========== */
     .hero {
       padding: 24px 16px 20px;
@@ -729,6 +764,12 @@
       <span class="lang-code" id="langCode">हिन्दी</span>
       <span class="chevron">▼</span>
     </div>
+
+    <a href="farmingGame.html" class="game-icon" title="Play Supply Chain Game">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+      </svg>
+    </a>
 
     <div class="toggle-wrap" onclick="toggleTheme()" tabindex="0" role="button">
       <div class="toggle-track">
