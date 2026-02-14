@@ -166,6 +166,40 @@ async function fetchCropData() {
 /* ============================================================
    RENDER FUNCTIONS
    ============================================================ */
+function renderCropNavigation(crops) {
+  const navContainer = document.getElementById('cropNavContainer');
+  const nav = document.getElementById('cropNav');
+  
+  if (crops.length === 0) {
+    nav.style.display = 'none';
+    return;
+  }
+  
+  navContainer.innerHTML = '';
+  
+  crops.forEach(crop => {
+    const cropName = crop.crop;
+    const meta = cropMeta[cropName] || { emoji: '🌱', category: 'vegetable' };
+    
+    const navItem = document.createElement('a');
+    navItem.className = 'crop-nav-item';
+    navItem.href = `#crop-${cropName}`;
+    navItem.dataset.crop = cropName;
+    
+    navItem.innerHTML = `
+      <div class="crop-nav-emoji">${meta.emoji}</div>
+      <div class="crop-nav-label" data-i18n="${cropName}"></div>
+    `;
+    
+    navContainer.appendChild(navItem);
+  });
+  
+  nav.style.display = 'block';
+  applyLang(currentLang);
+}
+
+
+
 function renderCrops(apiData) {
   let crops = [];
   
@@ -182,6 +216,9 @@ function renderCrops(apiData) {
   
   cropsData = crops;
   
+  // Render crop navigation
+  renderCropNavigation(crops);
+  
   const container = document.createElement('div');
   container.className = 'crops-container';
   
@@ -194,6 +231,32 @@ function renderCrops(apiData) {
   document.getElementById('disclaimer').style.display = 'block';
   
   applyLang(currentLang);
+  
+  // Add scroll observer to update active nav item
+  setupScrollObserver();
+}
+
+function setupScrollObserver() {
+  const options = {
+    root: null,
+    rootMargin: '-100px 0px -50% 0px',
+    threshold: 0
+  };
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const cropName = entry.target.dataset.crop;
+        document.querySelectorAll('.crop-nav-item').forEach(item => {
+          item.classList.toggle('active', item.dataset.crop === cropName);
+        });
+      }
+    });
+  }, options);
+  
+  document.querySelectorAll('.crop-card').forEach(card => {
+    observer.observe(card);
+  });
 }
 
 function createCropCard(cropData) {
@@ -207,6 +270,7 @@ function createCropCard(cropData) {
   const card = document.createElement('div');
   card.className = 'crop-card';
   card.dataset.crop = cropName;
+  card.id = `crop-${cropName}`;
   
   // Calculate price range
   const avgPrice = market?.predicted_average_price || 0;
